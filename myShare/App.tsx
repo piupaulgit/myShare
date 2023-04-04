@@ -8,6 +8,9 @@
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Button,
+  Image,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -24,75 +27,35 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+const appStack = createNativeStackNavigator();
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+import {loginImage} from './assets/images';
 
 function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    // <SafeAreaView>
+    //   <ScrollView
+    //     contentInsetAdjustmentBehavior="automatic">
+    //     <View style={styles.sectionContainer}>
+    //       <View style={{alignItems: 'center'}}>
+    //         <Image source={loginImage} style={{width: 150, height: 340, marginBottom: 30}} />
+    //       </View>
+    //       <Text style={[styles.h1, styles.darkText, {marginBottom: 10}]}>Manage your buddies to calculate</Text>
+    //       <Text style={[styles.bodyText, styles.darkText, {marginBottom: 30}]}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</Text>
+    //       <Pressable style={styles.buttonStyle}>
+    //         <Text style={styles.btnText}>Login with Google</Text>
+    //       </Pressable>
+    //     </View>
+    //   </ScrollView>
+    // </SafeAreaView>
+    <NavigationContainer>
+      <appStack.Navigator>
+        
+      </appStack.Navigator>
+    </NavigationContainer>
   );
 }
 
@@ -101,18 +64,28 @@ const styles = StyleSheet.create({
     marginTop: 32,
     paddingHorizontal: 24,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  buttonStyle:{
+    backgroundColor: '#E63946',
+    paddingTop: 18,
+    paddingBottom: 18,
+    color: '#fff',
+    borderRadius: 5
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  btnText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize:15
   },
-  highlight: {
-    fontWeight: '700',
+  h1: {
+    fontSize: 30,
+    fontWeight: "700"
   },
+  bodyText: {
+    fontSize: 15
+  },
+  darkText: {
+    color: '#1D3557'
+  }
 });
 
 export default App;
