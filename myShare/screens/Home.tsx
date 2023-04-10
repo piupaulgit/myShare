@@ -24,7 +24,7 @@ import {ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import {AuthContext} from '../navigation/AuthProvider';
-
+const randomColor = ["green","yellow","blue"]
 interface IEvent {
   id: string,
   title: string,
@@ -33,7 +33,7 @@ interface IEvent {
   endDate: string,
   imageUrl: string,
   createdBy: string,
-  members: [],
+  members: string[],
   status: string
 }
 
@@ -50,7 +50,7 @@ const Home = () => {
       startDate: '12/12/20',
       endDate: '19/12/20',
       createdBy: 'Deep',
-      members: [],
+      members: ['deep','piu','kunal','joyeeta'],
       status: 'open',
       imageUrl:
         'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=50',
@@ -335,6 +335,16 @@ const Home = () => {
                   </HStack>
                   <FormControl mt="3">
                     <FormControl.Label>Members</FormControl.Label>
+                    <HStack mb="2" space="1">
+                    {
+                      ['piu','deep','kunal'].map((member:string) => {
+                        const color = randomColor[Math.floor(Math.random() * randomColor.length)]
+                        return (
+                          <Avatar size="xs" bg="cyan.900">{member}</Avatar>
+                        )
+                      })
+                    }
+                    </HStack>
                     <Input />
                   </FormControl>
                 </Modal.Body>
