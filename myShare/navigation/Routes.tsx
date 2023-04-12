@@ -9,19 +9,14 @@ import AuthStack from './AuthStack'
 
 const Routes = () => {
     const {user, setUser} = useContext<any>(AuthContext);
-    const [initializing, setInitializing] = useState<boolean>(true)
-
 
   useEffect(() => {
-    // const subscriber = onAuthStateChanged(onAuthStateChanged);
-    // return subscriber; 
     const monitorAuth = async () =>{
       await onAuthStateChanged(auth, userDetail => {
         if(userDetail){
-          console.warn(userDetail)
           setUser(userDetail)
         }else{
-          console.warn('user')
+          setUser(null)
         }
       })
     }
@@ -30,7 +25,6 @@ const Routes = () => {
 
   return (
     <NavigationContainer>
-      {/* <Text>{user.uid}</Text> */}
         {
           user && <AppStack/> ||  <AuthStack/>
         }

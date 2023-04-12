@@ -14,7 +14,7 @@ const Header = () => {
           <Text>Back</Text>
         </HStack>
         <HStack>
-            <Avatar bg="cyan.500">PP</Avatar>
+            <Avatar bg="gray.700">PP</Avatar>
         </HStack>
       </HStack>
     </>

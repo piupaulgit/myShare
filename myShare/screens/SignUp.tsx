@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   ScrollView
 } from 'react-native';
@@ -9,11 +9,14 @@ import {
   Button,
   FormControl,
   Heading,
+  Image,
   Input,
   Stack,
   Text,
+  VStack,
 } from 'native-base';
 import {Link} from '@react-navigation/native';
+import { logo } from '../assets/images';
 
 interface IUser {
   email: string;
@@ -29,8 +32,14 @@ interface IErrorMessage {
 const SignUp = (props:any) => {
   const [newUser, setNewUser] = useState<IUser>(Object);
   const [errorMessages, setErrorMessages] = useState<IErrorMessage>(Object)
-
+  const {loader} = useContext<any>(AuthContext);
   const {register} = useContext(AuthContext);
+
+  useEffect(() => {
+    if(errorMessages.emailError === '' && errorMessages.passwordError === '' && errorMessages.confirmPasswordError === ''){
+      registerUser()
+    }
+  },[errorMessages])
 
   const validate = () => {
     setErrorMessages({
@@ -68,14 +77,10 @@ const SignUp = (props:any) => {
     }
 
     setErrorMessages({...errorMessages, emailError: emailMessage, passwordError : passwordMessage, confirmPasswordError: confrimPasswordMessage})
-    if(errorMessages.emailError === '' && errorMessages.passwordError === '' && errorMessages.confirmPasswordError === ''){
-      registerUser()
-    }
   }
 
   const registerUser = () => {
    register(newUser.email, newUser.password)
-   props.navigation.replace("Login")
   }
 
   return (
@@ -91,16 +96,20 @@ const SignUp = (props:any) => {
             base: '95%'
           }}>
           <Box>
-            <Heading size="2xl">Split expenses, not friendships</Heading>
-            <FormControl>
+            <VStack alignItems="center" mb="10">
+              <Image source={logo}  style={{width: 70, height: 80, marginBottom: 5}} alt="myShare logo"/>
+              <Text fontSize="xs">Split expenses, not friendships</Text>
+            </VStack>
+            <Heading size="xl" alignSelf="center" mb="5">Create Account</Heading>
+            <FormControl mb="2">
               <FormControl.Label>Email Address</FormControl.Label>
               <Input
                 value={newUser.email}
                 onChangeText={value => setNewUser({...newUser, email: value})}
               />
-              {errorMessages.emailError && <Text fontSize="xs" color="red.500" mb="2">{errorMessages.emailError}</Text>} 
+              {errorMessages?.emailError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.emailError}</Text>} 
             </FormControl>
-            <FormControl>
+            <FormControl mb="2">
               <FormControl.Label>Password</FormControl.Label>
               <Input
                 type="password"
@@ -109,9 +118,9 @@ const SignUp = (props:any) => {
                   setNewUser({...newUser, password: value})
                 }
               />
-              {errorMessages.passwordError && <Text fontSize="xs" color="red.500" mb="2">{errorMessages.passwordError}</Text>} 
+              {errorMessages?.passwordError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.passwordError}</Text>} 
             </FormControl>
-            <FormControl mb="4">
+            <FormControl mb="2">
               <FormControl.Label>Confirm Password</FormControl.Label>
               <Input
                 type="password"
@@ -120,11 +129,13 @@ const SignUp = (props:any) => {
                   setNewUser({...newUser, confirmPassowrd: value})
                 }
               />
-              {errorMessages.confirmPasswordError && <Text fontSize="xs" color="red.500" mb="2">{errorMessages.confirmPasswordError}</Text>} 
+              {errorMessages?.confirmPasswordError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.confirmPasswordError}</Text>} 
             </FormControl>
             <Button
               size="lg"
-              colorScheme="secondary"
+              bg="dark.50"
+              mt="4"
+              isLoading={loader}
               onPress={validate}>
               Sign up
             </Button>

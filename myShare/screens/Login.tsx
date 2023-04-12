@@ -1,9 +1,10 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { ScrollView, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Link } from '@react-navigation/native'
-import { Box, Button, FormControl, Heading, Input, Stack, Text } from 'native-base'
+import { Box, Button, FormControl, Heading, Input, Stack, Text, VStack, Image } from 'native-base'
 import { AuthContext } from '../navigation/AuthProvider'
+import { logo } from '../assets/images'
 
 interface IUser {
   email: string,
@@ -17,10 +18,16 @@ interface IErrorMessage {
 const Login = (props: any) => {
   const {login} = useContext(AuthContext);
   const [user, setUser] = useState<IUser>(Object)
+  const {loader} = useContext<any>(AuthContext);
   const [errorMessages, setErrorMessages] = useState<IErrorMessage>(Object)
 
+  useEffect(() => {
+    if(errorMessages.emailError === '' && errorMessages.passwordError === ''){
+      loginUser()
+    }
+  },[errorMessages])
+
   const validate = () => {
-    console.log("validate function")
     setErrorMessages({
       emailError: '',
       passwordError: ''
@@ -39,14 +46,10 @@ const Login = (props: any) => {
     }
 
     setErrorMessages({...errorMessages, emailError: emailMessage, passwordError : passwordMessage})
-    if(errorMessages.emailError === '' && errorMessages.passwordError === ''){
-      loginUser()
-    }
   }
 
   const loginUser = () => {
    login(user.email, user.password)
-   props.navigation.replace("Home")
   }
 
   return (
@@ -62,20 +65,26 @@ const Login = (props: any) => {
           base: '95%'
         }}>
         <Box>
-          <Heading size="2xl">Split expenses, not friendships</Heading>
-          <FormControl mb="3">
+          <VStack alignItems="center" mb="10">
+            <Image source={logo}  style={{width: 70, height: 80, marginBottom: 5}} alt="myShare logo"/>
+            <Text fontSize="xs">Split expenses, not friendships</Text>
+          </VStack>
+          <Heading size="xl" alignSelf="center" mb="5">Login account</Heading>
+          <FormControl mb="2">
             <FormControl.Label>Email Address</FormControl.Label>
             <Input onChangeText={value => setUser({...user, email: value})}/>
-            {errorMessages?.emailError?.length > 0 && <Text fontSize="xs" color="red.500" mb="2">{errorMessages.emailError}</Text>} 
+            {errorMessages?.emailError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.emailError}</Text>} 
           </FormControl>
-          <FormControl mb="5">
+          <FormControl mb="2">
             <FormControl.Label>Password</FormControl.Label>
             <Input type='password' onChangeText={value => setUser({...user, password: value})}/>
-            {errorMessages?.passwordError?.length > 0 && <Text fontSize="xs" color="red.500" mb="2">{errorMessages.passwordError}</Text>} 
+            {errorMessages?.passwordError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.passwordError}</Text>} 
           </FormControl>
           <Button
             size="lg"
-            colorScheme="secondary"
+            mt="4"
+            bg="dark.50"
+            isLoading={loader}
             onPress={validate}>
             Login
           </Button>
