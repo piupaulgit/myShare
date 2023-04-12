@@ -3,10 +3,7 @@ import {
   Badge,
   Box,
   Button,
-  Center,
-  Container,
   FlatList,
-  Flex,
   FormControl,
   Heading,
   HStack,
@@ -24,6 +21,7 @@ import {ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import {AuthContext} from '../navigation/AuthProvider';
+
 const randomColor = ["green","yellow","blue"]
 interface IEvent {
   id: string,
@@ -51,12 +49,12 @@ const Home = () => {
       endDate: '19/12/20',
       createdBy: 'Deep',
       members: ['deep','piu','kunal','joyeeta'],
-      status: 'open',
+      status: 'closed',
       imageUrl:
         'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=50',
     },
     {
-      id: 'bd7acbea-c1b1-46c2-aed5-dd',
+      id: 'bd7acbea-c1b1-46c2-aed5-ddee',
       title: 'Hyderabad',
       description: 'Lorem ipsum dolor sit amet',
       startDate: '12/12/20',
@@ -68,7 +66,7 @@ const Home = () => {
         'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
     },
     {
-      id: 'bd7acbea-c1b1-46c2-aed5-dduu',
+      id: 'bd7acbea-c1b1-46c2-aed5-dwwd',
       title: 'Hyderabad',
       description: 'Lorem ipsum dolor sit amet',
       startDate: '12/12/20',
@@ -78,11 +76,11 @@ const Home = () => {
       status: 'open',
       imageUrl:
         'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    },
+    }
   ];
   return (
     <SafeAreaView>
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
+      <ScrollView>
         <Stack
           space={6}
           alignSelf="center"
