@@ -22,6 +22,7 @@ const AuthProvider = (props: any) => {
       duration: 2000
     });
   }
+
   return (
     <AuthContext.Provider
       value={{
@@ -31,6 +32,12 @@ const AuthProvider = (props: any) => {
         setLoader,
         error,
         setError,
+        showToaster: (msg: string) => {
+          toastIdRef.current = toast.show({
+            title: msg,
+            duration: 2000
+          });
+        },
         login: async (email: string, password: string) => {
           setLoader(true);
           try {

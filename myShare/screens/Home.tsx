@@ -7,40 +7,64 @@ import {
   FormControl,
   Heading,
   HStack,
+  Icon,
   Input,
   Modal,
+  Pressable,
   Spacer,
   Stack,
   Text,
   TextArea,
+  useToast,
   View,
   VStack,
 } from 'native-base';
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import {AuthContext} from '../navigation/AuthProvider';
 
-const randomColor = ["green","yellow","blue"]
+const randomColor = ['green', 'yellow', 'blue'];
 interface IEvent {
-  id: string,
-  title: string,
-  description: string,
-  startDate: string,
-  endDate: string,
-  imageUrl: string,
-  createdBy: string,
-  members: string[],
-  status: string
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  imageUrl: string;
+  createdBy: string;
+  members: string[];
+  status: string;
+}
+
+interface INewEvent {
+  title: string;
+  description: string;
+  members: string[];
+}
+
+interface IErrorMessage {
+  titleErrorMessage: string,
+  membersErrorMessage: string
 }
 
 
-const Home = () => {
+const Home = (props:any) => {
   const {logout} = useContext(AuthContext);
+  const {showToaster} = useContext(AuthContext);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const {loader} = useContext<any>(AuthContext);
+  const [newEvent, setNewEvent] = useState<INewEvent>({
+    title: '',
+    description: '',
+    members: []
+  });
+  const [errorMessages, setErrorMessages] = useState<IErrorMessage>(Object)
 
-  const events:IEvent[] = [
+  const [newMemberName, setNewMemberName] = useState<string>('');
+
+  const events: IEvent[] = [
     {
       id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
       title: 'Manali',
@@ -48,7 +72,7 @@ const Home = () => {
       startDate: '12/12/20',
       endDate: '19/12/20',
       createdBy: 'Deep',
-      members: ['deep','piu','kunal','joyeeta'],
+      members: ['deep', 'piu', 'kunal', 'joyeeta'],
       status: 'closed',
       imageUrl:
         'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=50',
@@ -76,8 +100,56 @@ const Home = () => {
       status: 'open',
       imageUrl:
         'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    }
+    },
   ];
+
+  useEffect(() => {
+    if(errorMessages.titleErrorMessage === '' && errorMessages.membersErrorMessage === ''){
+      addThisEvent()
+    }
+  },[errorMessages])
+
+  const addThisMember = () => {
+    const ifAlreadyAdded = newEvent.members.filter((member:string) => member === newMemberName)
+    ifAlreadyAdded.length ? showToaster("Member already added") : setNewEvent({...newEvent, members: [...newEvent.members, newMemberName]});
+    setNewMemberName('')
+  };
+
+  const removeThisMember = (index: number) => {
+    newEvent.members.splice(index,1)
+    setNewEvent({...newEvent, members: newEvent.members})
+  }
+  
+  const validate = () => {
+    setErrorMessages({
+      titleErrorMessage: '',
+      membersErrorMessage: ''
+    })
+
+    let [titleMessage, membersMessage] = ["", ""]
+
+    // for title
+    if(!newEvent.title){
+      titleMessage = "Please Provide title for our event";
+    }
+
+    // for members
+    if(newEvent.members.length === 0){
+      membersMessage = "Please add at least one member";
+    }
+
+    setErrorMessages({titleErrorMessage: titleMessage, membersErrorMessage: membersMessage })
+  }
+
+  const addThisEvent = () => {
+    setShowModal(false)
+    console.warn(newEvent)
+  }
+
+  const eventDetail = (event:any) => {
+    props.navigation.navigate("EventDetail")
+  }
+  
   return (
     <SafeAreaView>
       <ScrollView>
@@ -92,31 +164,27 @@ const Home = () => {
           }}>
           <Header />
 
-          <Button bg="dark.50" onPress={() => setShowModal(true)}>
-            Add New Event
-          </Button>
-
-          {
-            events.length === 0 &&
+          {(events.length === 0 && (
             <Box>
               <Heading size="md" mb="4">
                 You don't have any event yet. Create your first event here
               </Heading>
             </Box>
-            ||
+          )) || (
             <Box>
               <Heading mb="4">Your events</Heading>
-                <FlatList
-                  data={events}
-                  renderItem={({item}) => (
-                    <Box
+              <FlatList
+                data={events}
+                renderItem={({item}) => (
+                  <Pressable onPress={() => eventDetail(item)}>
+                      <Box
                       bg="#fff"
-                      mb="1"
+                      mb="2"
                       borderColor="muted.800"
                       borderRadius="10"
                       pl={['4', '4']}
                       pr={['4', '4']}
-                      py="2">
+                      py="3">
                       <HStack space={[2, 3]} justifyContent="space-between">
                         <Avatar
                           size="50px"
@@ -134,31 +202,33 @@ const Home = () => {
                             {item.title}
                           </Text>
                           <Text
+                            isTruncated maxW="175"
                             color="coolGray.600"
                             _dark={{
                               color: 'warmGray.200',
                             }}>
                             {item.description}
                           </Text>
+                          <Text fontSize="xs" color="coolGray.600">created by: {item.createdBy}</Text>
                         </VStack>
                         <Spacer />
-                        {/* <Text
-                          fontSize="xs"
-                          _dark={{
-                            color: 'warmGray.50',
-                          }}
-                          color="coolGray.800"
-                          alignSelf="flex-start">
-                          {item.startDate}
-                        </Text> */}
-                        <Badge colorScheme="gray" alignSelf="flex-start" variant="outline">{item.status}</Badge>
+                        <Badge
+                          colorScheme="gray"
+                          alignSelf="flex-start"
+                          variant="outline">
+                          {item.status}
+                        </Badge>
                       </HStack>
                     </Box>
-                  )}
-                  keyExtractor={item => item.id}
-                />
+                  </Pressable>
+                )}
+                keyExtractor={item => item.id}
+              />
             </Box>
-          }
+          )}
+          <Button bg="dark.50" onPress={() => setShowModal(true)}>
+            Add New Event
+          </Button>
 
           <View>
             <Modal
@@ -169,48 +239,75 @@ const Home = () => {
                 <Modal.CloseButton />
                 <Modal.Header>Create a new event</Modal.Header>
                 <Modal.Body>
-                  <FormControl>
-                    <FormControl.Label>Title</FormControl.Label>
-                    <Input />
-                  </FormControl>
-                  <FormControl>
-                    <FormControl.Label>Description</FormControl.Label>
-                    <TextArea
-                      h={20}
-                      placeholder="Text Area Placeholder"
-                      w="100%"
-                      autoCompleteType={true}
-                    />
-                  </FormControl>
-                  <HStack space={3}>
-                    <FormControl mt="3" w="48%">
-                      <FormControl.Label>Start Date</FormControl.Label>
-                      <Input />
+                  <ScrollView>
+                    <FormControl mb="2">
+                      <FormControl.Label>Title</FormControl.Label>
+                      <Input
+                        placeholder="Title"
+                        onChangeText={value =>
+                          setNewEvent({...newEvent, title: value})
+                        }
+                      />
+                      {errorMessages?.titleErrorMessage?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.titleErrorMessage}</Text>} 
                     </FormControl>
-                    <FormControl mt="3" w="48%">
-                      <FormControl.Label>End Date</FormControl.Label>
-                      <Input />
+                    <FormControl>
+                      <FormControl.Label>Description</FormControl.Label>
+                      <TextArea
+                        h={20}
+                        placeholder="Description"
+                        w="100%"
+                        autoCompleteType={true}
+                        onChangeText={value =>
+                          setNewEvent({...newEvent, description: value})
+                        }
+                      />
                     </FormControl>
-                  </HStack>
-                  <FormControl mt="3">
-                    <FormControl.Label>Members</FormControl.Label>
-                    <HStack mb="2" space="1">
-                    {
-                      ['piu','deep','kunal'].map((member:string) => {
-                        const color = randomColor[Math.floor(Math.random() * randomColor.length)]
-                        return (
-                          <Avatar size="xs" bg="cyan.900">{member}</Avatar>
-                        )
-                      })
-                    }
-                    </HStack>
-                    <Input />
-                  </FormControl>
+                    {/* <HStack space={3}>
+                      <FormControl mt="3" flex="1">
+                        <FormControl.Label>Start Date</FormControl.Label>
+                        <Input />
+                      </FormControl>
+                      <FormControl mt="3" flex="1">
+                        <FormControl.Label>End Date</FormControl.Label>
+                        <Input />
+                      </FormControl>
+                    </HStack> */}
+                    <FormControl mt="2">
+                      <FormControl.Label>Members</FormControl.Label>
+                      {newEvent?.members?.length > 0 && 
+                      <>
+                        <Text fontSize="xs" color="gray.800" mb="1">Tap on the memeber name to remove</Text>
+                        <HStack space="2" mb="2">
+                          {newEvent?.members?.map((member: string, index:number) => {
+                            return (
+                                <Pressable key={index} onPress={() => removeThisMember(index)}>
+                                  <Badge>{member}</Badge>
+                                </Pressable>
+                              )
+                            })
+                          }
+                        </HStack>
+                      </>
+                        
+                      }
+                      <HStack space={2}>
+                        <Input
+                          flex="1"
+                          value={newMemberName}
+                          onChangeText={value => setNewMemberName(value)}
+                        />
+                        <Button bg="dark.50" onPress={addThisMember} py="2" isDisabled={!newMemberName}>
+                          Add
+                        </Button>
+                      </HStack>
+                      {errorMessages?.membersErrorMessage?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.membersErrorMessage}</Text>} 
+                    </FormControl>
+                  </ScrollView>
                 </Modal.Body>
                 <Modal.Footer>
                   <Button.Group space={2}>
                     <Button
-                      variant="ghost"
+                      bg="dark.500"
                       colorScheme="blueGray"
                       onPress={() => {
                         setShowModal(false);
@@ -218,18 +315,18 @@ const Home = () => {
                       Cancel
                     </Button>
                     <Button
-                      colorScheme="green"
-                      onPress={() => {
-                        setShowModal(false);
-                      }}>
-                      Save
+                      bg="dark.50"
+                      onPress={validate}>
+                      Add this event
                     </Button>
                   </Button.Group>
                 </Modal.Footer>
               </Modal.Content>
             </Modal>
           </View>
-          <Button onPress={logout} bg="dark.50">Logout</Button>
+          {/* <Button onPress={logout} isLoading={loader} bg="dark.50">
+            Logout
+          </Button> */}
         </Stack>
       </ScrollView>
     </SafeAreaView>
