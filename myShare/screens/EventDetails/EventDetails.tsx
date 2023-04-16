@@ -8,7 +8,14 @@ const Tab = createBottomTabNavigator();
 const EventDetails = () => {
 
   return (
-    <Tab.Navigator>
+    <Tab.Navigator screenOptions={{
+        tabBarLabelPosition: "beside-icon",
+        tabBarLabelStyle: {
+          fontWeight: "700",
+          fontSize: 15
+        },
+        tabBarIconStyle: { display: "none" },
+      }}>
         <Tab.Screen name="Overview" component={Overview} />
         <Tab.Screen name="ShareDetails" component={ShareDetails} />
     </Tab.Navigator>
