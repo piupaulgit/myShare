@@ -4,6 +4,7 @@ import {
   Badge,
   Box,
   Button,
+  Checkbox,
   Divider,
   FlatList,
   FormControl,
@@ -11,6 +12,7 @@ import {
   Input,
   Modal,
   Pressable,
+  Radio,
   ScrollView,
   Stack,
   Text,
@@ -30,6 +32,7 @@ interface IExpense {
 const Overview = () => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [showMemberModal, setShowMemberModal] = useState<boolean>(false);
+    const [addMemberFor, setAddMemberFor] = useState<string>('spentBy')
     const [expenses, setExpenses] = useState<IExpense[]>([
     {
       name: 'hotel',
@@ -66,11 +69,13 @@ const Overview = () => {
     status: '',
   });
 
-  const [selectedMembers, setSelectedMembers] = useState<any>([])
+  const openMemberModal = (modalType: string) =>{
+    setAddMemberFor(modalType)
+    setShowMemberModal(true)
+  }
 
-  const selectThisMember = (name: string) => {
-    setSelectedMembers(name)
-    console.log(selectedMembers)
+  const addMembers = () =>{
+    console.log(newOldExpense)
   }
 
   const validate = () => {};
@@ -230,8 +235,11 @@ const Overview = () => {
                   />
                 </FormControl>
                 <HStack justifyContent="space-between" alignItems="center">
-                  <Text color="gray.500">Spent by</Text>
-                  <Button bg="dark.50" size="xs" onPress={() => setShowMemberModal(true)}>Show Members</Button>
+                  <Text color="gray.500">Spent by: </Text>
+                  <Text color="gray.500">{newOldExpense.spentBy}</Text>
+                  <Button bg="dark.50" size="xs" onPress={() => openMemberModal('spentBy')}>
+                    {newOldExpense.spentBy ? 'Change' : 'Show Members'}
+                  </Button>
                 </HStack>
                 <FormControl mb="2">
                   <FormControl.Label>Date</FormControl.Label>
@@ -244,7 +252,16 @@ const Overview = () => {
                 </FormControl>
                 <HStack justifyContent="space-between" alignItems="center">
                   <Text color="gray.500">Divide between</Text>
-                  <Button bg="dark.50" size="xs">Show Members</Button>
+                    <HStack space="2" mt="2">
+                        {newOldExpense?.members?.map((member: string) => {
+                          return (
+                            <Badge variant="outline" key={member}>
+                              {member}
+                            </Badge>
+                          );
+                        })}
+                    </HStack>
+                  <Button bg="dark.50" size="xs" onPress={() => openMemberModal('divideWith')}>Show Members</Button>
                 </HStack>
               </ScrollView>
             </Modal.Body>
@@ -271,19 +288,20 @@ const Overview = () => {
             <Modal.CloseButton />
             <Modal.Header>Select Member</Modal.Header>
             <Modal.Body>
-            <FlatList
-                mt="3"
-                data={["deep",'Piu','kunal']}
-                keyExtractor={item => item}
-                renderItem={({item}) => (
-                    <Pressable onPress={() => selectThisMember(item)}>
-                        <Box borderColor="gray.200" borderWidth="1" px="2" py="1" mb="1" 
-                        bg={selectedMembers.filter((mem:string) => mem === item) ? 'gray.200' : ''}>
-                            <Text>{item}</Text>
-                            <Text>{selectedMembers.filter((member:string) => member !== item) ? '1' : '3'}</Text>
-                        </Box>
-                    </Pressable>
-                )}/>
+                {
+                    addMemberFor === 'spentBy' && 
+                    <Radio.Group name="spentBy" value={newOldExpense.spentBy} onChange={nextValue => {
+                        setNewOldExpense({...newOldExpense, spentBy: nextValue});
+                      }}>
+                        {["deep",'kunal','piu'].map((member:string) => <Radio value={member} my="1" key={member}>{member}</Radio>)}
+                    </Radio.Group>
+                }
+                {
+                    addMemberFor === 'divideWith' && 
+                    <VStack>
+                        {["deep",'kunal','piu'].map((member:string) => <Checkbox value={member}  my="1" key={member}>{member}</Checkbox>)}
+                    </VStack>
+                }
             </Modal.Body>
             <Modal.Footer>
               <Button.Group space={2}>
@@ -295,9 +313,7 @@ const Overview = () => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={validate}>
-                  Save
-                </Button>
+                <Button bg="dark.50" onPress={addMembers}>Save</Button>
               </Button.Group>
             </Modal.Footer>
           </Modal.Content>
