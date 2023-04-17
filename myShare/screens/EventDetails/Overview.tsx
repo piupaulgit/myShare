@@ -32,7 +32,7 @@ interface IExpense {
 const Overview = () => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [showMemberModal, setShowMemberModal] = useState<boolean>(false);
-    const [addMemberFor, setAddMemberFor] = useState<string>('spentBy')
+    const [addMemberFor, setAddMemberFor] = useState<string>('spentBy');
     const [expenses, setExpenses] = useState<IExpense[]>([
     {
       name: 'hotel',
@@ -66,7 +66,7 @@ const Overview = () => {
     spentBy: '',
     members: [],
     date: '',
-    status: '',
+    status: 'open',
   });
 
   const openMemberModal = (modalType: string) =>{
@@ -74,11 +74,16 @@ const Overview = () => {
     setShowMemberModal(true)
   }
 
-  const addMembers = () =>{
+  const validate = () => {
+    console.log(newOldExpense)
+  };
+
+  const openEditExpenseModal = (selectedExpense: IExpense) => {
+    setShowModal(true)
+    setNewOldExpense(selectedExpense)
     console.log(newOldExpense)
   }
 
-  const validate = () => {};
   return (
     <SafeAreaView>
       <ScrollView>
@@ -183,7 +188,7 @@ const Overview = () => {
                         })}
                       </HStack>
                       <HStack space="2" mt="2">
-                        <Button bg="dark.50" py="1">
+                        <Button bg="dark.50" py="1" onPress={() => openEditExpenseModal(item)}>
                           Edit
                         </Button>
                         <Button bg="dark.300" py="1">
@@ -229,14 +234,16 @@ const Overview = () => {
                   <FormControl.Label>Value</FormControl.Label>
                   <Input
                     placeholder="Value"
-                    onChangeText={value =>
-                      setNewOldExpense({...newOldExpense, value: value})
+                    onChangeText={val =>
+                      setNewOldExpense({...newOldExpense, value: val})
                     }
                   />
                 </FormControl>
                 <HStack justifyContent="space-between" alignItems="center">
-                  <Text color="gray.500">Spent by: </Text>
-                  <Text color="gray.500">{newOldExpense.spentBy}</Text>
+                  <HStack space="2">
+                    <Text color="gray.500">Spent by: </Text>
+                    {newOldExpense.spentBy && <Badge variant="outline">{newOldExpense.spentBy}</Badge>}
+                  </HStack>
                   <Button bg="dark.50" size="xs" onPress={() => openMemberModal('spentBy')}>
                     {newOldExpense.spentBy ? 'Change' : 'Show Members'}
                   </Button>
@@ -252,16 +259,16 @@ const Overview = () => {
                 </FormControl>
                 <HStack justifyContent="space-between" alignItems="center">
                   <Text color="gray.500">Divide between</Text>
-                    <HStack space="2" mt="2">
-                        {newOldExpense?.members?.map((member: string) => {
-                          return (
-                            <Badge variant="outline" key={member}>
-                              {member}
-                            </Badge>
-                          );
-                        })}
-                    </HStack>
                   <Button bg="dark.50" size="xs" onPress={() => openMemberModal('divideWith')}>Show Members</Button>
+                </HStack>
+                <HStack space="2" mt="2" flexWrap="wrap">
+                    {newOldExpense?.members?.map((member: string) => {
+                      return (
+                        <Badge variant="outline" key={member}>
+                          {member}
+                        </Badge>
+                      );
+                    })}
                 </HStack>
               </ScrollView>
             </Modal.Body>
@@ -290,16 +297,23 @@ const Overview = () => {
             <Modal.Body>
                 {
                     addMemberFor === 'spentBy' && 
-                    <Radio.Group name="spentBy" value={newOldExpense.spentBy} onChange={nextValue => {
-                        setNewOldExpense({...newOldExpense, spentBy: nextValue});
-                      }}>
+                    <Radio.Group name="spentBy" value={newOldExpense.spentBy}
+                      onChange={value =>
+                        setNewOldExpense({...newOldExpense, spentBy: value})
+                      }>
                         {["deep",'kunal','piu'].map((member:string) => <Radio value={member} my="1" key={member}>{member}</Radio>)}
                     </Radio.Group>
                 }
                 {
                     addMemberFor === 'divideWith' && 
                     <VStack>
-                        {["deep",'kunal','piu'].map((member:string) => <Checkbox value={member}  my="1" key={member}>{member}</Checkbox>)}
+                      <Checkbox.Group defaultValue={newOldExpense.members} onChange={values => {
+                          setNewOldExpense({...newOldExpense, members: values || []});
+                        }}>
+                        {["deep",'kunal'].map((member:string) => 
+                          <Checkbox value={member}  my="1" key={member}>{member}</Checkbox>
+                        )}
+                      </Checkbox.Group>
                     </VStack>
                 }
             </Modal.Body>
@@ -313,7 +327,7 @@ const Overview = () => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={addMembers}>Save</Button>
+                <Button bg="dark.50" onPress={() => setShowMemberModal(false)}>Save</Button>
               </Button.Group>
             </Modal.Footer>
           </Modal.Content>
