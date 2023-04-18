@@ -32,7 +32,9 @@ interface IExpense {
 const Overview = () => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [showMemberModal, setShowMemberModal] = useState<boolean>(false);
+    const [showDeleterModal, setShowDeleterModal] = useState<boolean>(false);
     const [addMemberFor, setAddMemberFor] = useState<string>('spentBy');
+    const [deleteModalType, setDeleteModalType] = useState<string>('')
     const [expenses, setExpenses] = useState<IExpense[]>([
     {
       name: 'hotel',
@@ -82,6 +84,11 @@ const Overview = () => {
     setShowModal(true)
     setNewOldExpense(selectedExpense)
     console.log(newOldExpense)
+  }
+
+  const openDeleteModal = (modalType: string) =>{
+    setShowDeleterModal(true)
+    setDeleteModalType(modalType)
   }
 
   return (
@@ -147,22 +154,27 @@ const Overview = () => {
               </Badge>
             </HStack>
             <HStack space="3" mt="2">
-              <Button
-                flex="1"
-                bg="dark.50"
-                onPress={() => {
-                  setShowModal(true);
-                }}>
-                Add expenses
-              </Button>
               <Button flex="1" bg="dark.300">
                 Edit Event
               </Button>
+              <Button flex="1" bg="dark.500" onPress={()=> openDeleteModal('event')}>
+                Delete Event
+              </Button>
             </HStack>
-            <VStack mt="7">
-              <Text fontSize="sm" bold>
-                Expenses
-              </Text>
+            <VStack mt="10">
+              <HStack justifyContent="space-between" alignItems="center" mb="2">
+                <Text fontSize="sm" bold>
+                  Expenses
+                </Text>
+                <Button
+                  size="sm"
+                  bg="dark.50"
+                  onPress={() => {
+                    setShowModal(true);
+                  }}>
+                  Add expenses
+                </Button>
+              </HStack>
               <FlatList
                 mt="3"
                 data={expenses}
@@ -191,7 +203,7 @@ const Overview = () => {
                         <Button bg="dark.50" py="1" onPress={() => openEditExpenseModal(item)}>
                           Edit
                         </Button>
-                        <Button bg="dark.300" py="1">
+                        <Button bg="dark.300" py="1" onPress={() => openDeleteModal('expense')}>
                           Delete
                         </Button>
                       </HStack>
@@ -328,6 +340,29 @@ const Overview = () => {
                   Cancel
                 </Button>
                 <Button bg="dark.50" onPress={() => setShowMemberModal(false)}>Save</Button>
+              </Button.Group>
+            </Modal.Footer>
+          </Modal.Content>
+        </Modal>
+
+        {/* delete modal */}
+        <Modal size="md" isOpen={showDeleterModal} onClose={() => setShowDeleterModal(false)}>
+          <Modal.Content maxWidth="400px">
+            <Modal.CloseButton />
+            <Modal.Header>Delete</Modal.Header>
+            <Modal.Body>
+              <Text>Do you really want to delete this {deleteModalType}?</Text>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button.Group space={2}>
+                <Button
+                  bg="dark.500"
+                  onPress={() => {
+                    setShowDeleterModal(false);
+                  }}>
+                  Cancel
+                </Button>
+                <Button bg="dark.50" onPress={() => setShowDeleterModal(false)}>Delete</Button>
               </Button.Group>
             </Modal.Footer>
           </Modal.Content>
