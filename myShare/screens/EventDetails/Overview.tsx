@@ -200,10 +200,10 @@ const Overview = () => {
                         })}
                       </HStack>
                       <HStack space="2" mt="2">
-                        <Button bg="dark.50" py="1" onPress={() => openEditExpenseModal(item)}>
+                        <Button bg="dark.300" py="1" onPress={() => openEditExpenseModal(item)}>
                           Edit
                         </Button>
-                        <Button bg="dark.300" py="1" onPress={() => openDeleteModal('expense')}>
+                        <Button bg="dark.500" py="1" onPress={() => openDeleteModal('expense')}>
                           Delete
                         </Button>
                       </HStack>

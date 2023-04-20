@@ -17,7 +17,7 @@ const EventDetails = () => {
         tabBarIconStyle: { display: "none" },
       }}>
         <Tab.Screen name="Overview" component={Overview} />
-        <Tab.Screen name="ShareDetails" component={ShareDetails} />
+        <Tab.Screen name="Share Details" component={ShareDetails} />
     </Tab.Navigator>
   )
 }
