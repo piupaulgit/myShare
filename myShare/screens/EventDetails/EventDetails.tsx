@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Overview from './Overview';
 import ShareDetails from './ShareDetails';
 import { Button } from 'native-base';
+import Profile from '../Profile';
 const Tab = createBottomTabNavigator();
 
 const EventDetails = (props:any) => {
@@ -22,6 +23,7 @@ const EventDetails = (props:any) => {
       }}>
         <Tab.Screen name="Overview" component={Overview} />
         <Tab.Screen name="Share Details" component={ShareDetails} />
+        <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   )
 }

@@ -7,7 +7,7 @@ import { AuthContext } from './AuthProvider'
 import AuthStack from './AuthStack'
 
 const Routes = () => {
-    const {setUser} = useContext<any>(AuthContext);
+    const {user, setUser} = useContext<any>(AuthContext);
 
   useEffect(() => {
     const monitorAuth = async () =>{
@@ -25,7 +25,7 @@ const Routes = () => {
   return (
     <NavigationContainer>
         {
-          'user' && <AppStack/> ||  <AuthStack/>
+          user && <AppStack/> ||  <AuthStack/>
         }
     </NavigationContainer>
   )

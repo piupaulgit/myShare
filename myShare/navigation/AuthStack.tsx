@@ -8,33 +8,24 @@ import SignUp from '../screens/SignUp'
 const Stack = createNativeStackNavigator()
 
 const AuthStack = () => {
-    const [isFirstLaunch, setIsForstLaunch] = useState<any>(null);
-    let routeName;
+    const [routeName, setRouteName] = useState<string>('');
 
-    // useEffect(() => {
-    //     AsyncStorage.getItem('alreadyLaunched').then((value:any) => {
-    //         if(value === null){
-    //             AsyncStorage.setItem('alreadyLaunched', 'true');
-    //             setIsForstLaunch(true)
-    //         }else{
-    //             setIsForstLaunch(false)
-    //         }
-    //     })
-    // }, [])
-
-    // if(isFirstLaunch === null){
-    //     return null;
-    // } else if (isFirstLaunch == true){
-    //     routeName = 'OnBoarding'
-    // }else{
-    //     routeName = 'Login'
-    // }
+    useEffect(() => {
+        AsyncStorage.getItem('alreadyLaunched').then((value:any) => {
+            if(value === 'true'){
+                setRouteName('Login');
+            }else{
+                setRouteName('OnBoarding');
+                AsyncStorage.setItem('alreadyLaunched', 'true');
+            }
+        })
+    }, [])
     
     return (
-        <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen name='Onboarding' component={OnBoarding}></Stack.Screen>
-            <Stack.Screen name='SignUp' component={SignUp}></Stack.Screen>
+        <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName={routeName}>
             <Stack.Screen name='Login' component={Login}></Stack.Screen>
+            <Stack.Screen name='OnBoarding' component={OnBoarding}></Stack.Screen>
+            <Stack.Screen name='SignUp' component={SignUp}></Stack.Screen>
         </Stack.Navigator>
     )
 }

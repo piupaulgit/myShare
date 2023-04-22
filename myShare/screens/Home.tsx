@@ -7,7 +7,6 @@ import {
   FormControl,
   Heading,
   HStack,
-  Icon,
   Input,
   Modal,
   Pressable,
@@ -15,9 +14,8 @@ import {
   Stack,
   Text,
   TextArea,
-  useToast,
   View,
-  VStack,
+  VStack
 } from 'native-base';
 import React, {useContext, useEffect, useState} from 'react';
 import {ScrollView} from 'react-native';
@@ -49,19 +47,15 @@ interface IErrorMessage {
 
 
 const Home = (props:any) => {
-  const {logout} = useContext(AuthContext);
   const {showToaster} = useContext(AuthContext);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const {loader} = useContext<any>(AuthContext);
   const [newEvent, setNewEvent] = useState<INewEvent>({
     title: '',
     description: '',
     members: []
   });
   const [errorMessages, setErrorMessages] = useState<IErrorMessage>(Object)
-
   const [newMemberName, setNewMemberName] = useState<string>('');
-
   const events: IEvent[] = [
     {
       id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
@@ -322,9 +316,6 @@ const Home = (props:any) => {
               </Modal.Content>
             </Modal>
           </View>
-          {/* <Button onPress={logout} isLoading={loader} bg="dark.50">
-            Logout
-          </Button> */}
         </Stack>
       </ScrollView>
     </SafeAreaView>
