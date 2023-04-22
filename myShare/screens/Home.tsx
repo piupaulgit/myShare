@@ -22,10 +22,8 @@ import {
 import React, {useContext, useEffect, useState} from 'react';
 import {ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Header from '../components/Header';
 import {AuthContext} from '../navigation/AuthProvider';
 
-const randomColor = ['green', 'yellow', 'blue'];
 interface IEvent {
   id: string;
   title: string;
@@ -162,7 +160,7 @@ const Home = (props:any) => {
           w={{
             base: '100%',
           }}>
-          <Header />
+          {/* <Avatar bg="gray.700">PP</Avatar> */}
 
           {(events.length === 0 && (
             <Box>

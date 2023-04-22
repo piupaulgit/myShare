@@ -3,9 +3,10 @@ import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Overview from './Overview';
 import ShareDetails from './ShareDetails';
+import { Button } from 'native-base';
 const Tab = createBottomTabNavigator();
 
-const EventDetails = () => {
+const EventDetails = (props:any) => {
 
   return (
     <Tab.Navigator screenOptions={{
@@ -14,6 +15,9 @@ const EventDetails = () => {
           fontWeight: "700",
           fontSize: 15
         },
+        headerRight: () => (
+          <Button bg="dark.50" size="xs" mr="4" onPress={() => props.navigation.navigate('Home')}>Back</Button>
+        ),
         tabBarIconStyle: { display: "none" },
       }}>
         <Tab.Screen name="Overview" component={Overview} />
