@@ -12,9 +12,13 @@ const EventDetails = (props:any) => {
   return (
     <Tab.Navigator screenOptions={{
         tabBarLabelPosition: "beside-icon",
+        tabBarActiveTintColor: '#fff',
         tabBarLabelStyle: {
           fontWeight: "700",
-          fontSize: 15
+          fontSize: 14
+        },
+        tabBarStyle:{
+          backgroundColor: '#1d1d1d'
         },
         headerRight: () => (
           <Button bg="dark.50" size="xs" mr="4" onPress={() => props.navigation.navigate('Home')}>Back</Button>

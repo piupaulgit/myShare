@@ -5,6 +5,10 @@ const logo = require('./logo.png');
 const memories = require('./memories.png');
 const paperEdge = require('./paperEdge.png');
 const edge = require('./edge.png');
+const noEvent = require('./noEvent.png');
+const friendship_onboard = require('./friendship_onboard.png');
+const conversation_onboard = require('./conversation_onboard.png');
+const memories_onboard = require('./memories_onboard.png');
 
 export {
     card,
@@ -13,5 +17,9 @@ export {
     logo,
     memories,
     paperEdge,
-    edge
+    edge,
+    noEvent,
+    friendship_onboard,
+    conversation_onboard,
+    memories_onboard
 }

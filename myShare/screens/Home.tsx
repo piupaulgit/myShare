@@ -7,6 +7,7 @@ import {
   FormControl,
   Heading,
   HStack,
+  Image,
   Input,
   Modal,
   Pressable,
@@ -20,24 +21,18 @@ import {
 import React, {useContext, useEffect, useState} from 'react';
 import {ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import { noEvent } from '../assets/images';
 import {AuthContext} from '../navigation/AuthProvider';
+import { windowHeight } from '../utils/Dimentions';
 
 interface IEvent {
-  id: string;
+  id?: string;
   title: string;
   description: string;
-  startDate: string;
-  endDate: string;
-  imageUrl: string;
+  date: any;
   createdBy: string;
   members: string[];
   status: string;
-}
-
-interface INewEvent {
-  title: string;
-  description: string;
-  members: string[];
 }
 
 interface IErrorMessage {
@@ -49,50 +44,26 @@ interface IErrorMessage {
 const Home = (props:any) => {
   const {showToaster} = useContext(AuthContext);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [newEvent, setNewEvent] = useState<INewEvent>({
+  const [newEvent, setNewEvent] = useState<IEvent>({
     title: '',
     description: '',
-    members: []
+    members: [],
+    status: 'open',
+    date: '',
+    createdBy: ''
   });
   const [errorMessages, setErrorMessages] = useState<IErrorMessage>(Object)
   const [newMemberName, setNewMemberName] = useState<string>('');
   const events: IEvent[] = [
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-      title: 'Manali',
-      description: 'Lorem ipsum dolor sit amet',
-      startDate: '12/12/20',
-      endDate: '19/12/20',
-      createdBy: 'Deep',
-      members: ['deep', 'piu', 'kunal', 'joyeeta'],
-      status: 'closed',
-      imageUrl:
-        'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=50',
-    },
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-ddee',
-      title: 'Hyderabad',
-      description: 'Lorem ipsum dolor sit amet',
-      startDate: '12/12/20',
-      endDate: '19/12/20',
-      createdBy: 'Deep',
-      members: [],
-      status: 'open',
-      imageUrl:
-        'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    },
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-dwwd',
-      title: 'Hyderabad',
-      description: 'Lorem ipsum dolor sit amet',
-      startDate: '12/12/20',
-      endDate: '19/12/20',
-      createdBy: 'Deep',
-      members: [],
-      status: 'open',
-      imageUrl:
-        'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    },
+    // {
+    //   id: 'string',
+    //   title: 'string',
+    //   description: 'string',
+    //   date: 'string',
+    //   createdBy: 'string',
+    //   members: ['string'],
+    //   status: 'string',
+    // }
   ];
 
   useEffect(() => {
@@ -134,8 +105,14 @@ const Home = (props:any) => {
   }
 
   const addThisEvent = () => {
+    let today:any = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+
+    today = mm + '/' + dd + '/' + yyyy;
     setShowModal(false)
-    console.warn(newEvent)
+    setNewEvent({...newEvent, date: today, status: 'open'})
   }
 
   const eventDetail = (event:any) => {
@@ -154,14 +131,17 @@ const Home = (props:any) => {
           w={{
             base: '100%',
           }}>
-          {/* <Avatar bg="gray.700">PP</Avatar> */}
 
           {(events.length === 0 && (
-            <Box>
-              <Heading size="md" mb="4">
+            <VStack justifyContent="center" minHeight={windowHeight} alignItems="center" mt="-10">
+              <Image source={noEvent} style={{width: 104, height: 110}} alt="no event image"/>
+              <Heading size="md" mb="4" mt="4" textAlign="center">
                 You don't have any event yet. Create your first event here
               </Heading>
-            </Box>
+              <Button bg="dark.50" onPress={() => setShowModal(true)}>
+                Add New Event
+              </Button>
+            </VStack>
           )) || (
             <Box>
               <Heading mb="4">Your events</Heading>
@@ -169,58 +149,52 @@ const Home = (props:any) => {
                 data={events}
                 renderItem={({item}) => (
                   <Pressable onPress={() => eventDetail(item)}>
-                      <Box
-                      bg="#fff"
+                    <HStack bg="#fff"
                       mb="2"
                       borderColor="muted.800"
                       borderRadius="10"
+                      justifyContent="space-between"
                       pl={['4', '4']}
                       pr={['4', '4']}
                       py="3">
-                      <HStack space={[2, 3]} justifyContent="space-between">
-                        <Avatar
-                          size="50px"
-                          source={{
-                            uri: item.imageUrl,
-                          }}
-                        />
+                      <Avatar
+                        >{item.title.split('')[0].toUpperCase()}</Avatar>
+
                         <VStack>
                           <Text
-                            _dark={{
-                              color: 'warmGray.50',
-                            }}
-                            color="coolGray.800"
-                            bold>
-                            {item.title}
-                          </Text>
-                          <Text
-                            isTruncated maxW="175"
-                            color="coolGray.600"
-                            _dark={{
-                              color: 'warmGray.200',
-                            }}>
-                            {item.description}
-                          </Text>
-                          <Text fontSize="xs" color="coolGray.600">created by: {item.createdBy}</Text>
+                              _dark={{
+                                color: 'warmGray.50',
+                              }}
+                              color="coolGray.800"
+                              bold>
+                              {item.title}
+                            </Text>
+                            <Text
+                              isTruncated maxW="175"
+                              color="coolGray.600"
+                              _dark={{
+                                color: 'warmGray.200',
+                              }}>
+                              {item.description}
+                            </Text>
+                            <Text fontSize="xs" color="coolGray.600">created by: {item.createdBy}</Text>
                         </VStack>
-                        <Spacer />
                         <Badge
                           colorScheme="gray"
                           alignSelf="flex-start"
                           variant="outline">
                           {item.status}
                         </Badge>
-                      </HStack>
-                    </Box>
+                    </HStack>
                   </Pressable>
                 )}
-                keyExtractor={item => item.id}
               />
+
+            <Button bg="dark.50" onPress={() => setShowModal(true)}>
+              Add New Event
+            </Button>
             </Box>
           )}
-          <Button bg="dark.50" onPress={() => setShowModal(true)}>
-            Add New Event
-          </Button>
 
           <View>
             <Modal
@@ -273,7 +247,7 @@ const Home = (props:any) => {
                           {newEvent?.members?.map((member: string, index:number) => {
                             return (
                                 <Pressable key={index} onPress={() => removeThisMember(index)}>
-                                  <Badge>{member}</Badge>
+                                  <Badge variant="outline">{member}</Badge>
                                 </Pressable>
                               )
                             })
@@ -287,6 +261,7 @@ const Home = (props:any) => {
                           flex="1"
                           value={newMemberName}
                           onChangeText={value => setNewMemberName(value)}
+                          placeholder="Members"
                         />
                         <Button bg="dark.50" onPress={addThisMember} py="2" isDisabled={!newMemberName}>
                           Add

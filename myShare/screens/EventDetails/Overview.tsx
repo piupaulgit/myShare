@@ -14,6 +14,7 @@ import {
   Pressable,
   Radio,
   ScrollView,
+  Select,
   Stack,
   Text,
   TextArea,
@@ -30,12 +31,13 @@ interface IExpense {
 }
 
 const Overview = () => {
-    const [showModal, setShowModal] = useState<boolean>(false);
-    const [showMemberModal, setShowMemberModal] = useState<boolean>(false);
-    const [showDeleterModal, setShowDeleterModal] = useState<boolean>(false);
-    const [addMemberFor, setAddMemberFor] = useState<string>('spentBy');
-    const [deleteModalType, setDeleteModalType] = useState<string>('')
-    const [expenses, setExpenses] = useState<IExpense[]>([
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showMemberModal, setShowMemberModal] = useState<boolean>(false);
+  const [showEditEventModal, setShowEditEventModal] = useState<boolean>(false);
+  const [showDeleterModal, setShowDeleterModal] = useState<boolean>(false);
+  const [addMemberFor, setAddMemberFor] = useState<string>('spentBy');
+  const [deleteModalType, setDeleteModalType] = useState<string>('');
+  const [expenses, setExpenses] = useState<IExpense[]>([
     {
       name: 'hotel',
       value: '2000',
@@ -71,25 +73,25 @@ const Overview = () => {
     status: 'open',
   });
 
-  const openMemberModal = (modalType: string) =>{
-    setAddMemberFor(modalType)
-    setShowMemberModal(true)
-  }
+  const openMemberModal = (modalType: string) => {
+    setAddMemberFor(modalType);
+    setShowMemberModal(true);
+  };
 
   const validate = () => {
-    console.log(newOldExpense)
+    console.log(newOldExpense);
   };
 
   const openEditExpenseModal = (selectedExpense: IExpense) => {
-    setShowModal(true)
-    setNewOldExpense(selectedExpense)
-    console.log(newOldExpense)
-  }
+    setShowModal(true);
+    setNewOldExpense(selectedExpense);
+    console.log(newOldExpense);
+  };
 
-  const openDeleteModal = (modalType: string) =>{
-    setShowDeleterModal(true)
-    setDeleteModalType(modalType)
-  }
+  const openDeleteModal = (modalType: string) => {
+    setShowDeleterModal(true);
+    setDeleteModalType(modalType);
+  };
 
   return (
     <SafeAreaView>
@@ -154,10 +156,13 @@ const Overview = () => {
               </Badge>
             </HStack>
             <HStack space="3" mt="2">
-              <Button flex="1" bg="dark.300">
+              <Button flex="1" bg="dark.300" onPress={() => setShowEditEventModal(true)}>
                 Edit Event
               </Button>
-              <Button flex="1" bg="dark.500" onPress={()=> openDeleteModal('event')}>
+              <Button
+                flex="1"
+                bg="dark.500"
+                onPress={() => openDeleteModal('event')}>
                 Delete Event
               </Button>
             </HStack>
@@ -200,10 +205,16 @@ const Overview = () => {
                         })}
                       </HStack>
                       <HStack space="2" mt="2">
-                        <Button bg="dark.300" py="1" onPress={() => openEditExpenseModal(item)}>
+                        <Button
+                          bg="dark.300"
+                          py="1"
+                          onPress={() => openEditExpenseModal(item)}>
                           Edit
                         </Button>
-                        <Button bg="dark.500" py="1" onPress={() => openDeleteModal('expense')}>
+                        <Button
+                          bg="dark.500"
+                          py="1"
+                          onPress={() => openDeleteModal('expense')}>
                           Delete
                         </Button>
                       </HStack>
@@ -254,9 +265,14 @@ const Overview = () => {
                 <HStack justifyContent="space-between" alignItems="center">
                   <HStack space="2">
                     <Text color="gray.500">Spent by: </Text>
-                    {newOldExpense.spentBy && <Badge variant="outline">{newOldExpense.spentBy}</Badge>}
+                    {newOldExpense.spentBy && (
+                      <Badge variant="outline">{newOldExpense.spentBy}</Badge>
+                    )}
                   </HStack>
-                  <Button bg="dark.50" size="xs" onPress={() => openMemberModal('spentBy')}>
+                  <Button
+                    bg="dark.50"
+                    size="xs"
+                    onPress={() => openMemberModal('spentBy')}>
                     {newOldExpense.spentBy ? 'Change' : 'Show Members'}
                   </Button>
                 </HStack>
@@ -271,16 +287,21 @@ const Overview = () => {
                 </FormControl>
                 <HStack justifyContent="space-between" alignItems="center">
                   <Text color="gray.500">Divide between</Text>
-                  <Button bg="dark.50" size="xs" onPress={() => openMemberModal('divideWith')}>Show Members</Button>
+                  <Button
+                    bg="dark.50"
+                    size="xs"
+                    onPress={() => openMemberModal('divideWith')}>
+                    Show Members
+                  </Button>
                 </HStack>
                 <HStack space="2" mt="2" flexWrap="wrap">
-                    {newOldExpense?.members?.map((member: string) => {
-                      return (
-                        <Badge variant="outline" key={member}>
-                          {member}
-                        </Badge>
-                      );
-                    })}
+                  {newOldExpense?.members?.map((member: string) => {
+                    return (
+                      <Badge variant="outline" key={member}>
+                        {member}
+                      </Badge>
+                    );
+                  })}
                 </HStack>
               </ScrollView>
             </Modal.Body>
@@ -302,32 +323,46 @@ const Overview = () => {
           </Modal.Content>
         </Modal>
 
-        <Modal size="sm" isOpen={showMemberModal} onClose={() => setShowMemberModal(false)}>
+        <Modal
+          size="sm"
+          isOpen={showMemberModal}
+          onClose={() => setShowMemberModal(false)}>
           <Modal.Content maxWidth="400px">
             <Modal.CloseButton />
             <Modal.Header>Select Member</Modal.Header>
             <Modal.Body>
-                {
-                    addMemberFor === 'spentBy' && 
-                    <Radio.Group name="spentBy" value={newOldExpense.spentBy}
-                      onChange={value =>
-                        setNewOldExpense({...newOldExpense, spentBy: value})
-                      }>
-                        {["deep",'kunal','piu'].map((member:string) => <Radio value={member} my="1" key={member}>{member}</Radio>)}
-                    </Radio.Group>
-                }
-                {
-                    addMemberFor === 'divideWith' && 
-                    <VStack>
-                      <Checkbox.Group defaultValue={newOldExpense.members} onChange={values => {
-                          setNewOldExpense({...newOldExpense, members: values || []});
-                        }}>
-                        {["deep",'kunal'].map((member:string) => 
-                          <Checkbox value={member}  my="1" key={member}>{member}</Checkbox>
-                        )}
-                      </Checkbox.Group>
-                    </VStack>
-                }
+              {addMemberFor === 'spentBy' && (
+                <Radio.Group
+                  name="spentBy"
+                  value={newOldExpense.spentBy}
+                  onChange={value =>
+                    setNewOldExpense({...newOldExpense, spentBy: value})
+                  }>
+                  {['deep', 'kunal', 'piu'].map((member: string) => (
+                    <Radio value={member} my="1" key={member}>
+                      {member}
+                    </Radio>
+                  ))}
+                </Radio.Group>
+              )}
+              {addMemberFor === 'divideWith' && (
+                <VStack>
+                  <Checkbox.Group
+                    defaultValue={newOldExpense.members}
+                    onChange={values => {
+                      setNewOldExpense({
+                        ...newOldExpense,
+                        members: values || [],
+                      });
+                    }}>
+                    {['deep', 'kunal'].map((member: string) => (
+                      <Checkbox value={member} my="1" key={member}>
+                        {member}
+                      </Checkbox>
+                    ))}
+                  </Checkbox.Group>
+                </VStack>
+              )}
             </Modal.Body>
             <Modal.Footer>
               <Button.Group space={2}>
@@ -339,14 +374,19 @@ const Overview = () => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={() => setShowMemberModal(false)}>Save</Button>
+                <Button bg="dark.50" onPress={() => setShowMemberModal(false)}>
+                  Save
+                </Button>
               </Button.Group>
             </Modal.Footer>
           </Modal.Content>
         </Modal>
 
         {/* delete modal */}
-        <Modal size="md" isOpen={showDeleterModal} onClose={() => setShowDeleterModal(false)}>
+        <Modal
+          size="md"
+          isOpen={showDeleterModal}
+          onClose={() => setShowDeleterModal(false)}>
           <Modal.Content maxWidth="400px">
             <Modal.CloseButton />
             <Modal.Header>Delete</Modal.Header>
@@ -362,7 +402,103 @@ const Overview = () => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={() => setShowDeleterModal(false)}>Delete</Button>
+                <Button bg="dark.50" onPress={() => setShowDeleterModal(false)}>
+                  Delete
+                </Button>
+              </Button.Group>
+            </Modal.Footer>
+          </Modal.Content>
+        </Modal>
+
+        {/* edit event modal */}
+
+        <Modal size="xl" isOpen={showEditEventModal} onClose={() => setShowEditEventModal(false)}>
+          <Modal.Content maxWidth="400px">
+            <Modal.CloseButton />
+            <Modal.Header>Create a new event</Modal.Header>
+            <Modal.Body>
+              <ScrollView>
+                <FormControl mb="2">
+                  <FormControl.Label>Title</FormControl.Label>
+                  <Input
+                    placeholder="Title"
+                  />
+                  {/* {errorMessages?.titleErrorMessage?.length > 0 && (
+                    <Text fontSize="xs" color="gray.500">
+                      {errorMessages.titleErrorMessage}
+                    </Text>
+                  )} */}
+                </FormControl>
+                <FormControl>
+                  <FormControl.Label>Description</FormControl.Label>
+                  <TextArea
+                    h={20}
+                    placeholder="Description"
+                    w="100%"
+                    autoCompleteType={true}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormControl.Label>Status</FormControl.Label>
+                  <Select minWidth="200" placeholder="Status">
+                      <Select.Item label="Open" value="open" />
+                      <Select.Item label="Close" value="close" />
+                    </Select>
+                </FormControl>
+                <FormControl mt="2">
+                  <FormControl.Label>Members</FormControl.Label>
+                  {/* {newEvent?.members?.length > 0 && (
+                    <>
+                      <Text fontSize="xs" color="gray.800" mb="1">
+                        Tap on the memeber name to remove
+                      </Text>
+                      <HStack space="2" mb="2">
+                        {newEvent?.members?.map(
+                          (member: string, index: number) => {
+                            return (
+                              <Pressable
+                                key={index}
+                                onPress={() => removeThisMember(index)}>
+                                <Badge variant="outline">{member}</Badge>
+                              </Pressable>
+                            );
+                          },
+                        )}
+                      </HStack>
+                    </>
+                  )} */}
+                  <HStack space={2}>
+                    <Input
+                      flex="1"
+                      placeholder="Members"
+                    />
+                    <Button
+                      bg="dark.50"
+                      py="2">
+                      Add
+                    </Button>
+                  </HStack>
+                  {/* {errorMessages?.membersErrorMessage?.length > 0 && (
+                    <Text fontSize="xs" color="gray.500">
+                      {errorMessages.membersErrorMessage}
+                    </Text>
+                  )} */}
+                </FormControl>
+              </ScrollView>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button.Group space={2}>
+                <Button
+                  bg="dark.500"
+                  colorScheme="blueGray"
+                  onPress={() => {
+                    setShowEditEventModal(false);
+                  }}>
+                  Cancel
+                </Button>
+                <Button bg="dark.50" onPress={validate}>
+                  Add this event
+                </Button>
               </Button.Group>
             </Modal.Footer>
           </Modal.Content>
