@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {
   Badge,
@@ -11,7 +11,6 @@ import {
   HStack,
   Input,
   Modal,
-  Pressable,
   Radio,
   ScrollView,
   Select,
@@ -20,57 +19,34 @@ import {
   TextArea,
   VStack,
 } from 'native-base';
+import {IEvent, IExpense} from '../../interfaces/interfaces';
 
-interface IExpense {
-  name: string;
-  value: string;
-  spentBy: string;
-  members: string[];
-  date: string;
-  status: string;
+interface IErrorMessage {
+  titleErrorMessage: string;
+  valueErrorMessage: string;
+  spentByErrorMessage: string;
+  dateErrorMessage: string;
+  splitBetweenErrorMessage: string;
 }
 
-const Overview = () => {
+const Overview = (props: any) => {
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [singleEvent, setSingleEvent] = useState<IEvent>(props.singleEventData);
   const [showMemberModal, setShowMemberModal] = useState<boolean>(false);
   const [showEditEventModal, setShowEditEventModal] = useState<boolean>(false);
   const [showDeleterModal, setShowDeleterModal] = useState<boolean>(false);
   const [addMemberFor, setAddMemberFor] = useState<string>('spentBy');
   const [deleteModalType, setDeleteModalType] = useState<string>('');
-  const [expenses, setExpenses] = useState<IExpense[]>([
-    {
-      name: 'hotel',
-      value: '2000',
-      spentBy: 'Deep',
-      members: ['Piu', 'Deep', 'Kunal'],
-      date: '12/12/2023',
-      status: 'open',
-    },
-    {
-      name: 'food',
-      value: '2000',
-      spentBy: 'Deep',
-      members: ['joyeeta'],
-      date: '12/12/2023',
-      status: 'open',
-    },
-    {
-      name: 'shopping',
-      value: '2000',
-      spentBy: 'Piu',
-      members: ['Piu'],
-      date: '12/12/2023',
-      status: 'open',
-    },
-  ]);
+  const [addEditExpenseError, setAddEditExpenseError] =
+    useState<IErrorMessage>(Object);
 
   const [newOldExpense, setNewOldExpense] = useState<IExpense>({
-    name: '',
+    title: '',
     value: '',
     spentBy: '',
-    members: [],
-    date: '',
-    status: 'open',
+    splitBetween: props.singleEventData.members,
+    date: props.singleEventData.date,
+    status: props.singleEventData.status,
   });
 
   const openMemberModal = (modalType: string) => {
@@ -79,10 +55,48 @@ const Overview = () => {
   };
 
   const validate = () => {
-    console.log(newOldExpense);
+    setAddEditExpenseError({
+      titleErrorMessage: '',
+      valueErrorMessage: '',
+      spentByErrorMessage: '',
+      dateErrorMessage: '',
+      splitBetweenErrorMessage: '',
+    });
+
+    let [
+      titleMessage,
+      valueMessage,
+      spentByMessage,
+      dateMessage,
+      splitBetweenMessage,
+    ] = ['', '', '', '', ''];
+
+    if (!newOldExpense.title) {
+      titleMessage = 'Please Provide title for expense';
+    }
+    if (!newOldExpense.value) {
+      valueMessage = 'Please Provide value for expense';
+    }
+    if (!newOldExpense.spentBy) {
+      spentByMessage = 'Please select member';
+    }
+    if (!newOldExpense.date) {
+      dateMessage = 'Please provide date';
+    }
+    if (newOldExpense.splitBetween.length === 0) {
+      splitBetweenMessage = 'Please select at least on member';
+    }
+
+    setAddEditExpenseError({
+      titleErrorMessage: titleMessage,
+      valueErrorMessage: valueMessage,
+      spentByErrorMessage: spentByMessage,
+      dateErrorMessage: dateMessage,
+      splitBetweenErrorMessage: splitBetweenMessage,
+    });
   };
 
-  const openEditExpenseModal = (selectedExpense: IExpense) => {
+  const openEditExpenseModal = (selectedExpense: any) => {
     setShowModal(true);
     setNewOldExpense(selectedExpense);
     console.log(newOldExpense);
@@ -104,59 +118,30 @@ const Overview = () => {
           <Box py="4" borderRadius="5">
             <HStack justifyContent="space-between">
               <Text fontSize="md" bold mb="1">
-                Deep's Birthday Party
+                {singleEvent.title}
               </Text>
-              <Badge variant="outline">Open</Badge>
+              <Badge variant="outline">{singleEvent.status}</Badge>
             </HStack>
+            <Text fontSize="xs">Date: {singleEvent.date}</Text>
             <Text fontSize="xs" mb="3">
-              Create By: Deep
+              Created By: {singleEvent.createdBy}
             </Text>
             <Text color="gray.600" fontSize="sm">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Reprehenderit, eos consectetur vel iste sed possimus at, nihil
-              similique rerum magnam est doloribus beatae impedit quam deserunt
-              iusto earum eaque! Ad.
+              {singleEvent.description}
             </Text>
             <HStack mt="3" flexWrap="wrap" space={2}>
-              <Badge variant="outline" mb="2">
-                Piu
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Deep
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Kunal
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Joyeeta
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Piu
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Deep
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Kunal
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Joyeeta
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Piu
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Deep
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Kunal
-              </Badge>
-              <Badge variant="outline" mb="2">
-                Joyeeta
-              </Badge>
+              {singleEvent.members.length > 0 &&
+                singleEvent.members.map(member => (
+                  <Badge variant="outline" mb="2" key={member}>
+                    {member}
+                  </Badge>
+                ))}
             </HStack>
             <HStack space="3" mt="2">
-              <Button flex="1" bg="dark.300" onPress={() => setShowEditEventModal(true)}>
+              <Button
+                flex="1"
+                bg="dark.300"
+                onPress={() => setShowEditEventModal(true)}>
                 Edit Event
               </Button>
               <Button
@@ -182,12 +167,12 @@ const Overview = () => {
               </HStack>
               <FlatList
                 mt="3"
-                data={expenses}
-                keyExtractor={item => item.name}
+                data={singleEvent.expenses}
+                keyExtractor={item => item.title}
                 renderItem={({item}) => (
                   <Box bg="white" borderRadius="4" px="4" py="2" mb="2">
                     <HStack justifyContent="space-between" flexWrap="wrap">
-                      <Text>{item.name}</Text>
+                      <Text>{item.title}</Text>
                       <Text>{item.value}</Text>
                     </HStack>
                     <Text fontSize="xs" mb="4">
@@ -196,7 +181,7 @@ const Overview = () => {
                     <Divider />
                     <HStack justifyContent="space-between">
                       <HStack space="2" mt="2">
-                        {item?.members?.map((member: string) => {
+                        {item?.splitBetween?.map((member: string) => {
                           return (
                             <Badge variant="outline" key={member}>
                               {member}
@@ -244,58 +229,91 @@ const Overview = () => {
             <Modal.Body>
               <ScrollView>
                 <FormControl mb="2">
-                  <FormControl.Label>Name</FormControl.Label>
+                  <FormControl.Label>Title</FormControl.Label>
                   <Input
-                    placeholder="Name"
+                    placeholder="Title"
+                    value={newOldExpense.title}
                     onChangeText={value =>
-                      setNewOldExpense({...newOldExpense, name: value})
+                      setNewOldExpense({...newOldExpense, title: value})
                     }
                   />
-                  {/* {errorMessages?.titleErrorMessage?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.titleErrorMessage}</Text>}  */}
+                  {addEditExpenseError?.titleErrorMessage?.length > 0 && (
+                    <Text fontSize="xs" color="gray.500">
+                      {addEditExpenseError.titleErrorMessage}
+                    </Text>
+                  )}
                 </FormControl>
                 <FormControl mb="2">
                   <FormControl.Label>Value</FormControl.Label>
                   <Input
                     placeholder="Value"
+                    value={newOldExpense.value}
                     onChangeText={val =>
                       setNewOldExpense({...newOldExpense, value: val})
                     }
                   />
+                  {addEditExpenseError?.valueErrorMessage?.length > 0 && (
+                    <Text fontSize="xs" color="gray.500">
+                      {addEditExpenseError.valueErrorMessage}
+                    </Text>
+                  )}
                 </FormControl>
+                <VStack>
                 <HStack justifyContent="space-between" alignItems="center">
-                  <HStack space="2">
+                  <HStack space="2" alignItems="center">
                     <Text color="gray.500">Spent by: </Text>
-                    {newOldExpense.spentBy && (
-                      <Badge variant="outline">{newOldExpense.spentBy}</Badge>
+                    {newOldExpense.spentBy ? (
+                      <>
+                        <Badge variant="outline">{newOldExpense.spentBy}</Badge>
+                        <Button
+                          bg="dark.50"
+                          size="xs"
+                          onPress={() => openMemberModal('spentBy')}>
+                          Show Members
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        bg="dark.50"
+                        size="xs"
+                        onPress={() => openMemberModal('spentBy')}>
+                        Show Members
+                      </Button>
                     )}
                   </HStack>
-                  <Button
-                    bg="dark.50"
-                    size="xs"
-                    onPress={() => openMemberModal('spentBy')}>
-                    {newOldExpense.spentBy ? 'Change' : 'Show Members'}
-                  </Button>
-                </HStack>
+                  </HStack>
+                  {addEditExpenseError?.spentByErrorMessage?.length > 0 && (
+                    <Text fontSize="xs" color="gray.500">
+                      {addEditExpenseError.spentByErrorMessage}
+                    </Text>
+                  )}
+                </VStack>
                 <FormControl mb="2">
                   <FormControl.Label>Date</FormControl.Label>
                   <Input
                     placeholder="Date"
+                    value={singleEvent.date}
                     onChangeText={value =>
                       setNewOldExpense({...newOldExpense, date: value})
                     }
                   />
+                  {addEditExpenseError?.dateErrorMessage?.length > 0 && (
+                    <Text fontSize="xs" color="gray.500">
+                      {addEditExpenseError.dateErrorMessage}
+                    </Text>
+                  )}
                 </FormControl>
                 <HStack justifyContent="space-between" alignItems="center">
-                  <Text color="gray.500">Divide between</Text>
+                  <Text color="gray.500">Split between</Text>
                   <Button
                     bg="dark.50"
                     size="xs"
                     onPress={() => openMemberModal('divideWith')}>
-                    Show Members
+                    Add/Remove Members
                   </Button>
                 </HStack>
                 <HStack space="2" mt="2" flexWrap="wrap">
-                  {newOldExpense?.members?.map((member: string) => {
+                  {newOldExpense?.splitBetween?.map((member: string) => {
                     return (
                       <Badge variant="outline" key={member}>
                         {member}
@@ -303,6 +321,11 @@ const Overview = () => {
                     );
                   })}
                 </HStack>
+                {addEditExpenseError?.splitBetweenErrorMessage?.length > 0 && (
+                  <Text fontSize="xs" color="gray.500">
+                    {addEditExpenseError.splitBetweenErrorMessage}
+                  </Text>
+                )}
               </ScrollView>
             </Modal.Body>
             <Modal.Footer>
@@ -338,7 +361,7 @@ const Overview = () => {
                   onChange={value =>
                     setNewOldExpense({...newOldExpense, spentBy: value})
                   }>
-                  {['deep', 'kunal', 'piu'].map((member: string) => (
+                  {singleEvent?.members?.map((member: string) => (
                     <Radio value={member} my="1" key={member}>
                       {member}
                     </Radio>
@@ -348,14 +371,14 @@ const Overview = () => {
               {addMemberFor === 'divideWith' && (
                 <VStack>
                   <Checkbox.Group
-                    defaultValue={newOldExpense.members}
+                    defaultValue={newOldExpense.splitBetween}
                     onChange={values => {
                       setNewOldExpense({
                         ...newOldExpense,
-                        members: values || [],
+                        splitBetween: values || [],
                       });
                     }}>
-                    {['deep', 'kunal'].map((member: string) => (
+                    {singleEvent?.members?.map((member: string) => (
                       <Checkbox value={member} my="1" key={member}>
                         {member}
                       </Checkbox>
@@ -412,7 +435,10 @@ const Overview = () => {
 
         {/* edit event modal */}
 
-        <Modal size="xl" isOpen={showEditEventModal} onClose={() => setShowEditEventModal(false)}>
+        <Modal
+          size="xl"
+          isOpen={showEditEventModal}
+          onClose={() => setShowEditEventModal(false)}>
           <Modal.Content maxWidth="400px">
             <Modal.CloseButton />
             <Modal.Header>Create a new event</Modal.Header>
@@ -420,9 +446,7 @@ const Overview = () => {
               <ScrollView>
                 <FormControl mb="2">
                   <FormControl.Label>Title</FormControl.Label>
-                  <Input
-                    placeholder="Title"
-                  />
+                  <Input placeholder="Title" />
                   {/* {errorMessages?.titleErrorMessage?.length > 0 && (
                     <Text fontSize="xs" color="gray.500">
                       {errorMessages.titleErrorMessage}
@@ -441,9 +465,9 @@ const Overview = () => {
                 <FormControl>
                   <FormControl.Label>Status</FormControl.Label>
                   <Select minWidth="200" placeholder="Status">
-                      <Select.Item label="Open" value="open" />
-                      <Select.Item label="Close" value="close" />
-                    </Select>
+                    <Select.Item label="Open" value="open" />
+                    <Select.Item label="Close" value="close" />
+                  </Select>
                 </FormControl>
                 <FormControl mt="2">
                   <FormControl.Label>Members</FormControl.Label>
@@ -468,13 +492,8 @@ const Overview = () => {
                     </>
                   )} */}
                   <HStack space={2}>
-                    <Input
-                      flex="1"
-                      placeholder="Members"
-                    />
-                    <Button
-                      bg="dark.50"
-                      py="2">
+                    <Input flex="1" placeholder="Members" />
+                    <Button bg="dark.50" py="2">
                       Add
                     </Button>
                   </HStack>

@@ -20,11 +20,13 @@ import { logo } from '../assets/images';
 
 interface IUser {
   email: string;
+  userName: string;
   password: string;
   confirmPassowrd: string;
 }
 interface IErrorMessage {
   emailError: string,
+  userNameError: string,
   passwordError: string, 
   confirmPasswordError : string
 }
@@ -36,7 +38,9 @@ const SignUp = (props:any) => {
   const {register} = useContext(AuthContext);
 
   useEffect(() => {
-    if(errorMessages.emailError === '' && errorMessages.passwordError === '' && errorMessages.confirmPasswordError === ''){
+    if(errorMessages.emailError === '' && errorMessages.passwordError === '' && 
+    errorMessages.confirmPasswordError === ''
+    && errorMessages.userNameError === ''){
       registerUser()
     }
   },[errorMessages])
@@ -44,11 +48,12 @@ const SignUp = (props:any) => {
   const validate = () => {
     setErrorMessages({
       emailError: '',
+      userNameError: '',
       passwordError: '', 
       confirmPasswordError : ''
     })
 
-    let [emailMessage, passwordMessage, confrimPasswordMessage] = ["", "", ""]
+    let [emailMessage, passwordMessage, userNameMessage, confrimPasswordMessage] = ["", "", "",""]
 
     // for Email
     if(!newUser.email){
@@ -56,6 +61,11 @@ const SignUp = (props:any) => {
     }
     else if(!newUser.email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)){
       emailMessage = 'Please Provide valid email';
+    }
+
+    // userName error
+    if(!newUser.userName){
+      userNameMessage = "Please Provide your username";
     }
 
     // for password
@@ -76,7 +86,7 @@ const SignUp = (props:any) => {
       confrimPasswordMessage = 'Please confirm password';
     }
 
-    setErrorMessages({...errorMessages, emailError: emailMessage, passwordError : passwordMessage, confirmPasswordError: confrimPasswordMessage})
+    setErrorMessages({...errorMessages, emailError: emailMessage, passwordError : passwordMessage, confirmPasswordError: confrimPasswordMessage, userNameError: userNameMessage})
   }
 
   const registerUser = () => {
@@ -92,6 +102,7 @@ const SignUp = (props:any) => {
           px="6"
           safeArea
           mt="4"
+          pb="10"
           w={{
             base: '95%'
           }}>
@@ -108,6 +119,14 @@ const SignUp = (props:any) => {
                 onChangeText={value => setNewUser({...newUser, email: value})}
               />
               {errorMessages?.emailError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.emailError}</Text>} 
+            </FormControl>
+            <FormControl mb="2">
+              <FormControl.Label>User Name</FormControl.Label>
+              <Input
+                value={newUser.userName}
+                onChangeText={value => setNewUser({...newUser, userName: value})}
+              />
+              {errorMessages?.userNameError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.userNameError}</Text>} 
             </FormControl>
             <FormControl mb="2">
               <FormControl.Label>Password</FormControl.Label>

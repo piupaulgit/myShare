@@ -4,8 +4,9 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword
 } from 'firebase/auth';
-import {auth} from '../firebaseConfig';
+import {auth, FirebaseDB} from '../firebaseConfig';
 import { useToast } from 'native-base';
+import { addDoc, collection } from 'firebase/firestore';
 
 export const AuthContext = createContext<any>(null);
 
@@ -21,6 +22,10 @@ const AuthProvider = (props: any) => {
       title: msg,
       duration: 2000
     });
+  }
+
+  async function addRegisterUserInUserCollection(uid: string, userName: string) {
+    await addDoc(collection(FirebaseDB, "users"), {uid: uid, userName: userName})
   }
 
   return (
@@ -52,6 +57,7 @@ const AuthProvider = (props: any) => {
           setLoader(true);
           try {
             await createUserWithEmailAndPassword(auth, email, password);
+            
           } catch (error:any) {
             addToast(error.message)
           } finally {
