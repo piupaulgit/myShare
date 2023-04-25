@@ -45,6 +45,7 @@ const Home = (props: any) => {
     description: '',
     members: [],
     status: 'open',
+    expenses: [],
     date: `${String(new Date().getDate()).padStart(2, '0')}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${new Date().getFullYear()}`,
     createdBy: user.uid,
   });

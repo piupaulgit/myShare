@@ -6,7 +6,7 @@ export interface IEvent {
     createdBy: any;
     members: string[];
     status: string;
-    expenses?: IExpense[]
+    expenses: IExpense[]
   }
 
 export interface IExpense {

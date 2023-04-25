@@ -11,6 +11,7 @@ import {
   HStack,
   Input,
   Modal,
+  Pressable,
   Radio,
   ScrollView,
   Select,
@@ -165,58 +166,69 @@ const Overview = (props: any) => {
                   Add expenses
                 </Button>
               </HStack>
-              <FlatList
-                mt="3"
-                data={singleEvent.expenses}
-                keyExtractor={item => item.title}
-                renderItem={({item}) => (
-                  <Box bg="white" borderRadius="4" px="4" py="2" mb="2">
-                    <HStack justifyContent="space-between" flexWrap="wrap">
-                      <Text>{item.title}</Text>
-                      <Text>{item.value}</Text>
-                    </HStack>
-                    <Text fontSize="xs" mb="4">
-                      Spent by: {item.spentBy} ({item.date})
-                    </Text>
-                    <Divider />
-                    <HStack justifyContent="space-between">
-                      <HStack space="2" mt="2">
-                        {item?.splitBetween?.map((member: string) => {
-                          return (
-                            <Badge variant="outline" key={member}>
-                              {member}
-                            </Badge>
-                          );
-                        })}
-                      </HStack>
-                      <HStack space="2" mt="2">
-                        <Button
-                          bg="dark.300"
-                          py="1"
-                          onPress={() => openEditExpenseModal(item)}>
-                          Edit
-                        </Button>
-                        <Button
-                          bg="dark.500"
-                          py="1"
-                          onPress={() => openDeleteModal('expense')}>
-                          Delete
-                        </Button>
-                      </HStack>
-                    </HStack>
-                  </Box>
-                )}></FlatList>
-              <HStack
-                borderColor="dark.200"
-                borderWidth="1"
-                px="3"
-                py="3"
-                mt="2"
-                justifyContent="space-between"
-                borderRadius="4">
-                <Text>Total Expense</Text>
-                <Text>23000</Text>
-              </HStack>
+             {console.warn(singleEvent)}
+              
+              { (!singleEvent.expenses || singleEvent.expenses?.length) === 0 ? 
+                <Text>
+                  No expense added till now. Please add one to get calculation
+                  started
+                </Text>
+               : (
+                <>
+                  <FlatList
+                    mt="3"
+                    data={singleEvent.expenses}
+                    keyExtractor={item => item.title}
+                    renderItem={({item}) => (
+                      <Box bg="white" borderRadius="4" px="4" py="2" mb="2">
+                        <HStack justifyContent="space-between" flexWrap="wrap">
+                          <Text>{item.title}</Text>
+                          <Text>{item.value}</Text>
+                        </HStack>
+                        <Text fontSize="xs" mb="4">
+                          Spent by: {item.spentBy} ({item.date})
+                        </Text>
+                        <Divider />
+                        <HStack justifyContent="space-between">
+                          <HStack space="2" mt="2">
+                            {item?.splitBetween?.map((member: string) => {
+                              return (
+                                <Badge variant="outline" key={member}>
+                                  {member}
+                                </Badge>
+                              );
+                            })}
+                          </HStack>
+                          <HStack space="2" mt="2">
+                            <Button
+                              bg="dark.300"
+                              py="1"
+                              onPress={() => openEditExpenseModal(item)}>
+                              Edit
+                            </Button>
+                            <Button
+                              bg="dark.500"
+                              py="1"
+                              onPress={() => openDeleteModal('expense')}>
+                              Delete
+                            </Button>
+                          </HStack>
+                        </HStack>
+                      </Box>
+                    )}></FlatList>
+                  <HStack
+                    borderColor="dark.200"
+                    borderWidth="1"
+                    px="3"
+                    py="3"
+                    mt="2"
+                    justifyContent="space-between"
+                    borderRadius="4">
+                    <Text>Total Expense</Text>
+                    <Text>23000</Text>
+                  </HStack>
+                </>
+              )}
             </VStack>
           </Box>
         </Stack>
@@ -259,28 +271,30 @@ const Overview = (props: any) => {
                   )}
                 </FormControl>
                 <VStack>
-                <HStack justifyContent="space-between" alignItems="center">
-                  <HStack space="2" alignItems="center">
-                    <Text color="gray.500">Spent by: </Text>
-                    {newOldExpense.spentBy ? (
-                      <>
-                        <Badge variant="outline">{newOldExpense.spentBy}</Badge>
+                  <HStack justifyContent="space-between" alignItems="center">
+                    <HStack space="2" alignItems="center">
+                      <Text color="gray.500">Spent by: </Text>
+                      {newOldExpense.spentBy ? (
+                        <>
+                          <Badge variant="outline">
+                            {newOldExpense.spentBy}
+                          </Badge>
+                          <Button
+                            bg="dark.50"
+                            size="xs"
+                            onPress={() => openMemberModal('spentBy')}>
+                            Show Members
+                          </Button>
+                        </>
+                      ) : (
                         <Button
                           bg="dark.50"
                           size="xs"
                           onPress={() => openMemberModal('spentBy')}>
                           Show Members
                         </Button>
-                      </>
-                    ) : (
-                      <Button
-                        bg="dark.50"
-                        size="xs"
-                        onPress={() => openMemberModal('spentBy')}>
-                        Show Members
-                      </Button>
-                    )}
-                  </HStack>
+                      )}
+                    </HStack>
                   </HStack>
                   {addEditExpenseError?.spentByErrorMessage?.length > 0 && (
                     <Text fontSize="xs" color="gray.500">
@@ -389,16 +403,8 @@ const Overview = (props: any) => {
             </Modal.Body>
             <Modal.Footer>
               <Button.Group space={2}>
-                <Button
-                  bg="dark.500"
-                  colorScheme="blueGray"
-                  onPress={() => {
-                    setShowMemberModal(false);
-                  }}>
-                  Cancel
-                </Button>
                 <Button bg="dark.50" onPress={() => setShowMemberModal(false)}>
-                  Save
+                  Done
                 </Button>
               </Button.Group>
             </Modal.Footer>
@@ -441,12 +447,12 @@ const Overview = (props: any) => {
           onClose={() => setShowEditEventModal(false)}>
           <Modal.Content maxWidth="400px">
             <Modal.CloseButton />
-            <Modal.Header>Create a new event</Modal.Header>
+            <Modal.Header>Edit event</Modal.Header>
             <Modal.Body>
               <ScrollView>
                 <FormControl mb="2">
                   <FormControl.Label>Title</FormControl.Label>
-                  <Input placeholder="Title" />
+                  <Input placeholder="Title" value={singleEvent.title} />
                   {/* {errorMessages?.titleErrorMessage?.length > 0 && (
                     <Text fontSize="xs" color="gray.500">
                       {errorMessages.titleErrorMessage}
@@ -459,18 +465,39 @@ const Overview = (props: any) => {
                     h={20}
                     placeholder="Description"
                     w="100%"
+                    value={singleEvent.description}
                     autoCompleteType={true}
                   />
                 </FormControl>
                 <FormControl>
                   <FormControl.Label>Status</FormControl.Label>
-                  <Select minWidth="200" placeholder="Status">
+                  <Select
+                    minWidth="200"
+                    placeholder="Status"
+                    onValueChange={itemValue =>
+                      setSingleEvent({...singleEvent, status: itemValue})
+                    }
+                    selectedValue={singleEvent.status}>
                     <Select.Item label="Open" value="open" />
                     <Select.Item label="Close" value="close" />
                   </Select>
                 </FormControl>
                 <FormControl mt="2">
                   <FormControl.Label>Members</FormControl.Label>
+                  <Text fontSize="xs" color="gray.800" mb="1">
+                    Tap on the memeber name to remove
+                  </Text>
+                  <HStack space="2" mb="2">
+                    {singleEvent?.members?.map(
+                      (member: string, index: number) => {
+                        return (
+                          <Pressable key={index}>
+                            <Badge variant="outline">{member}</Badge>
+                          </Pressable>
+                        );
+                      },
+                    )}
+                  </HStack>
                   {/* {newEvent?.members?.length > 0 && (
                     <>
                       <Text fontSize="xs" color="gray.800" mb="1">
@@ -516,7 +543,7 @@ const Overview = (props: any) => {
                   Cancel
                 </Button>
                 <Button bg="dark.50" onPress={validate}>
-                  Add this event
+                  Save
                 </Button>
               </Button.Group>
             </Modal.Footer>
