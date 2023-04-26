@@ -48,6 +48,7 @@ const Home = (props: any) => {
     expenses: [],
     date: `${String(new Date().getDate()).padStart(2, '0')}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${new Date().getFullYear()}`,
     createdBy: user.uid,
+    totalExpense: 0
   });
   const [errorMessages, setErrorMessages] = useState<IErrorMessage>({
     titleErrorMessage: '',
@@ -113,7 +114,7 @@ const Home = (props: any) => {
 
     // for title
     if (!newEvent.title) {
-      titleMessage = 'Please Provide title for our event';
+      titleMessage = 'Please Provide title for your event';
     }
 
     // for members
@@ -130,22 +131,7 @@ const Home = (props: any) => {
   const addThisEvent = async() => {
     const saveObject = {
       ...newEvent,
-      expenses: [
-        {
-          title: 'hotel',
-          value: 2000,
-          date: '12/02/2020',
-          spentBy: 'deep',
-          members: ['piu','kun']
-        },
-        {
-          title: 'train',
-          value: 2000,
-          date: '12/02/2020',
-          spentBy: 'piu',
-          members: ['piu','joye']
-        },
-      ]
+      expenses: []
     }
     try{
       setAddEventLoader(true)
@@ -322,7 +308,7 @@ const Home = (props: any) => {
                                     <Pressable
                                       key={index}
                                       onPress={() => removeThisMember(index)}>
-                                      <Badge variant="outline">{member}</Badge>
+                                      <Badge variant="outline" mb="2">{member}</Badge>
                                     </Pressable>
                                   );
                                 },

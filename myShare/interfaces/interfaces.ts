@@ -6,12 +6,13 @@ export interface IEvent {
     createdBy: any;
     members: string[];
     status: string;
-    expenses: IExpense[]
+    expenses: IExpense[],
+    totalExpense: number
   }
 
 export interface IExpense {
     title: string,
-    value: string,
+    value: any,
     splitBetween: string[],
     date: string,
     spentBy: string,

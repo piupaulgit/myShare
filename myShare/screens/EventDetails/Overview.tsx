@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {
   Badge,
@@ -21,6 +21,7 @@ import {
   VStack,
 } from 'native-base';
 import {IEvent, IExpense} from '../../interfaces/interfaces';
+import { AuthContext } from '../../navigation/AuthProvider';
 
 interface IErrorMessage {
   titleErrorMessage: string;
@@ -30,25 +31,35 @@ interface IErrorMessage {
   splitBetweenErrorMessage: string;
 }
 
+interface IErrorMessageForEditEvent{
+  titleErrorMessage: string,
+  membersErrorMessage: string
+}
+
 const Overview = (props: any) => {
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [newMemberName, setNewMemberName] = useState<string>('')
   const [singleEvent, setSingleEvent] = useState<IEvent>(props.singleEventData);
   const [showMemberModal, setShowMemberModal] = useState<boolean>(false);
   const [showEditEventModal, setShowEditEventModal] = useState<boolean>(false);
   const [showDeleterModal, setShowDeleterModal] = useState<boolean>(false);
   const [addMemberFor, setAddMemberFor] = useState<string>('spentBy');
   const [deleteModalType, setDeleteModalType] = useState<string>('');
+  const {showToaster} = useContext(AuthContext);
   const [addEditExpenseError, setAddEditExpenseError] =
     useState<IErrorMessage>(Object);
+  const [eventForEdit, setEventForEdit] = useState<IEvent>(Object)
 
   const [newOldExpense, setNewOldExpense] = useState<IExpense>({
     title: '',
-    value: '',
+    value: 0,
     spentBy: '',
     splitBetween: props.singleEventData.members,
     date: props.singleEventData.date,
     status: props.singleEventData.status,
   });
+
+  const [errorMessagesForEditEvent, setErrorMessagesForEditEvent] = useState<IErrorMessageForEditEvent>(Object);
 
   const openMemberModal = (modalType: string) => {
     setAddMemberFor(modalType);
@@ -108,6 +119,70 @@ const Overview = (props: any) => {
     setDeleteModalType(modalType);
   };
 
+  const addThisMember = () => {
+    const ifAlreadyAdded = eventForEdit.members.filter(
+      (member: string) => member === newMemberName,
+    );
+    ifAlreadyAdded.length
+      ? showToaster('Member already added')
+      : setEventForEdit({
+          ...eventForEdit,
+          members: [...eventForEdit.members, newMemberName],
+        });
+    setNewMemberName('');
+  };
+
+  const validateEvent = () => {
+    setErrorMessagesForEditEvent({
+      titleErrorMessage: '',
+      membersErrorMessage:''
+    });
+
+    let [titleMessage, membersMessage] = ['', '',''];
+
+    // for title
+    if (!eventForEdit.title) {
+      titleMessage = 'Please Provide title for your event';
+    }
+
+    // for members
+    if (eventForEdit.members.length === 0) {
+      membersMessage = 'Please add at least one member';
+    }
+
+    setErrorMessagesForEditEvent({
+      titleErrorMessage: titleMessage,
+      membersErrorMessage: membersMessage,
+    });
+  }
+
+  useEffect(() => {
+    if (
+      errorMessagesForEditEvent.titleErrorMessage === '' &&
+      errorMessagesForEditEvent.membersErrorMessage === ''
+    ) {
+      editThisEvent();
+    }
+  }, [errorMessagesForEditEvent]);
+
+  const editThisEvent = () => {
+    console.warn(eventForEdit)
+  }
+
+  const removeThisMember = (index: number) => {
+    const eventMembers = [...eventForEdit.members];
+    eventMembers.splice(index, 1);
+    setEventForEdit({...eventForEdit, members: eventMembers});
+  };
+
+  const calculateAllTypeOfExpenses = () => {
+    let totalExpense = 0;
+    singleEvent.expenses.forEach((expense:IExpense) => {
+      totalExpense = totalExpense + Number(expense.value);
+    })
+    console.warn(totalExpense)
+  }
+
   return (
     <SafeAreaView>
       <ScrollView>
@@ -142,7 +217,7 @@ const Overview = (props: any) => {
               <Button
                 flex="1"
                 bg="dark.300"
-                onPress={() => setShowEditEventModal(true)}>
+                onPress={() => {setEventForEdit(singleEvent), setShowEditEventModal(true)} }>
                 Edit Event
               </Button>
               <Button
@@ -160,20 +235,17 @@ const Overview = (props: any) => {
                 <Button
                   size="sm"
                   bg="dark.50"
-                  onPress={() => {
-                    setShowModal(true);
-                  }}>
+                  onPress={() => setShowModal(true)}>
                   Add expenses
                 </Button>
               </HStack>
-             {console.warn(singleEvent)}
-              
-              { (!singleEvent.expenses || singleEvent.expenses?.length) === 0 ? 
+
+              {(!singleEvent.expenses || singleEvent.expenses?.length) === 0 ? (
                 <Text>
                   No expense added till now. Please add one to get calculation
                   started
                 </Text>
-               : (
+              ) : (
                 <>
                   <FlatList
                     mt="3"
@@ -225,7 +297,7 @@ const Overview = (props: any) => {
                     justifyContent="space-between"
                     borderRadius="4">
                     <Text>Total Expense</Text>
-                    <Text>23000</Text>
+                    <Text>{singleEvent.totalExpense}</Text>
                   </HStack>
                 </>
               )}
@@ -352,7 +424,7 @@ const Overview = (props: any) => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={validate}>
+                <Button bg="dark.50" onPress={calculateAllTypeOfExpenses}>
                   Add Expense
                 </Button>
               </Button.Group>
@@ -452,22 +524,22 @@ const Overview = (props: any) => {
               <ScrollView>
                 <FormControl mb="2">
                   <FormControl.Label>Title</FormControl.Label>
-                  <Input placeholder="Title" value={singleEvent.title} />
-                  {/* {errorMessages?.titleErrorMessage?.length > 0 && (
+                  <Input placeholder="Title" value={eventForEdit.title} 
+                  onChangeText={(val:string) =>
+                      setEventForEdit({...eventForEdit, title: val})
+                    } />
+                  {errorMessagesForEditEvent?.titleErrorMessage?.length > 0 && (
                     <Text fontSize="xs" color="gray.500">
-                      {errorMessages.titleErrorMessage}
+                      {errorMessagesForEditEvent.titleErrorMessage}
                     </Text>
-                  )} */}
+                  )}
                 </FormControl>
                 <FormControl>
                   <FormControl.Label>Description</FormControl.Label>
-                  <TextArea
-                    h={20}
-                    placeholder="Description"
-                    w="100%"
-                    value={singleEvent.description}
-                    autoCompleteType={true}
-                  />
+                  <Input placeholder="Description" value={eventForEdit.description} 
+                  onChangeText={value =>
+                    setEventForEdit({...eventForEdit, description: value})
+                  } style={{height:50}} mb="2"/>
                 </FormControl>
                 <FormControl>
                   <FormControl.Label>Status</FormControl.Label>
@@ -475,9 +547,9 @@ const Overview = (props: any) => {
                     minWidth="200"
                     placeholder="Status"
                     onValueChange={itemValue =>
-                      setSingleEvent({...singleEvent, status: itemValue})
+                      setEventForEdit({...eventForEdit, status: itemValue})
                     }
-                    selectedValue={singleEvent.status}>
+                    selectedValue={eventForEdit.status}>
                     <Select.Item label="Open" value="open" />
                     <Select.Item label="Close" value="close" />
                   </Select>
@@ -487,48 +559,34 @@ const Overview = (props: any) => {
                   <Text fontSize="xs" color="gray.800" mb="1">
                     Tap on the memeber name to remove
                   </Text>
-                  <HStack space="2" mb="2">
-                    {singleEvent?.members?.map(
+                  <HStack space="2" mb="2" flexWrap="wrap">
+                    {eventForEdit?.members?.map(
                       (member: string, index: number) => {
                         return (
-                          <Pressable key={index}>
-                            <Badge variant="outline">{member}</Badge>
+                          <Pressable key={index} onPress={() => removeThisMember(index)}>
+                            <Badge variant="outline" mb="2">{member}</Badge>
                           </Pressable>
                         );
                       },
                     )}
                   </HStack>
-                  {/* {newEvent?.members?.length > 0 && (
-                    <>
-                      <Text fontSize="xs" color="gray.800" mb="1">
-                        Tap on the memeber name to remove
-                      </Text>
-                      <HStack space="2" mb="2">
-                        {newEvent?.members?.map(
-                          (member: string, index: number) => {
-                            return (
-                              <Pressable
-                                key={index}
-                                onPress={() => removeThisMember(index)}>
-                                <Badge variant="outline">{member}</Badge>
-                              </Pressable>
-                            );
-                          },
-                        )}
-                      </HStack>
-                    </>
-                  )} */}
                   <HStack space={2}>
-                    <Input flex="1" placeholder="Members" />
-                    <Button bg="dark.50" py="2">
+                    <Input flex="1" placeholder="Members" value={newMemberName} onChangeText={value =>
+                      setNewMemberName(value)
+                    } />
+                    <Button
+                      bg="dark.50"
+                      onPress={addThisMember}
+                      py="2"
+                      isDisabled={!newMemberName}>
                       Add
                     </Button>
                   </HStack>
-                  {/* {errorMessages?.membersErrorMessage?.length > 0 && (
+                  {errorMessagesForEditEvent?.membersErrorMessage?.length > 0 && (
                     <Text fontSize="xs" color="gray.500">
-                      {errorMessages.membersErrorMessage}
+                      {errorMessagesForEditEvent.membersErrorMessage}
                     </Text>
-                  )} */}
+                  )}
                 </FormControl>
               </ScrollView>
             </Modal.Body>
@@ -542,7 +600,7 @@ const Overview = (props: any) => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={validate}>
+                <Button bg="dark.50" onPress={validateEvent}>
                   Save
                 </Button>
               </Button.Group>

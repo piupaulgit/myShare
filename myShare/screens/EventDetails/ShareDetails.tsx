@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {
   Box,
@@ -11,9 +11,101 @@ import {
   Text,
   VStack,
 } from 'native-base';
-import { Link } from '@react-navigation/native';
+import {IEvent, IExpense} from '../../interfaces/interfaces';
 
-const ShareDetails = (props:any) => {
+interface IGenaricObjectForMember {
+  name: string;
+  detail: any;
+  totalAmountSpent: number;
+  totalShare: number;
+  spentIn: string;
+  shareIn: string;
+  finalCalculation: number;
+  extra: number
+}
+
+const ShareDetails = (props: any) => {
+  const [singleEvent, setSingleEvent] = useState<IEvent>(props.singleEventData);
+  const [memberShareDetails, setMemberShareDetails] =
+    useState<IGenaricObjectForMember[]>([]);
+
+  const expenses: IExpense[] = [
+    {
+      title: 'hotel',
+      value: 3000,
+      splitBetween: ['piu', 'kun', 'deep'],
+      spentBy: 'deep',
+      date: '9',
+      status: 'open',
+    },
+    {
+      title: 'food',
+      value: 3000,
+      splitBetween: ['piu', 'kun'],
+      spentBy: 'piu',
+      date: '9',
+      status: 'open',
+    },
+    {
+      title: 'train',
+      value: 3000,
+      splitBetween: ['piu', 'kun', 'joye'],
+      spentBy: 'piu',
+      date: '9',
+      status: 'open',
+    },
+  ];
+
+  useEffect(() => {
+    const memberArray: any = [];
+    singleEvent.members.forEach(member => {
+      var obj: IGenaricObjectForMember = {
+        name: member,
+        totalAmountSpent: 0,
+        detail: [],
+        spentIn: '',
+        shareIn: '',
+        totalShare: 0,
+        finalCalculation: 0,
+        extra: 0
+      };
+      singleEvent.expenses.forEach(expense => {
+        if (member === expense.spentBy) {
+          obj['totalAmountSpent'] = obj.totalAmountSpent + expense.value;
+          obj['spentIn'] = `${obj['spentIn']} ${expense.title} `;
+        }
+        if(expense.splitBetween.includes(member)){
+          obj['totalShare'] = obj.totalShare + expense.value/expense.splitBetween.length;
+          obj['shareIn'] = `${obj['shareIn']} ${expense.title} `;
+        }
+      });
+      obj['finalCalculation'] = obj.totalAmountSpent - obj.totalShare;
+      obj['extra'] = obj['finalCalculation']
+      memberArray.push(obj);
+    });
+    memberArray.forEach((eachMember:IGenaricObjectForMember) => {
+      if(eachMember.extra < 0 ){ 
+        memberArray.forEach((mem:IGenaricObjectForMember) => {
+          if(mem.extra > 0 ){
+            if(mem.extra === Math.abs(eachMember.extra)){
+              eachMember.detail.push(`${eachMember.name} needs to pay ${mem.extra} to ${mem.name}`)
+              mem.detail.push(`${mem.name} will get ${mem.extra} from ${eachMember.name}`)
+              eachMember.extra = 0;
+              mem.extra = 0
+            }
+            else if(Math.abs(eachMember.extra) > mem.extra){
+              eachMember.detail.push(`${eachMember.name} needs to pay ${mem.extra} to ${mem.name}`)
+              mem.detail.push(`${mem.name} will get ${mem.extra} from ${eachMember.name}`)
+              eachMember.extra = -(Math.abs(eachMember.extra) - mem.extra)
+              mem.extra = 0;
+            }
+          }
+        })
+      }
+    });
+    setMemberShareDetails(memberArray)
+  }, [singleEvent]);
+
   return (
     <SafeAreaView>
       <ScrollView>
@@ -23,150 +115,38 @@ const ShareDetails = (props:any) => {
           w={{
             base: '100%',
           }}>
-          <Heading>Total expense - 34,355</Heading>
+          <Heading>Total expense - {singleEvent.totalExpense}</Heading>
           <Box mt="5">
             <VStack space="2" mb="5">
-              <Heading size="sm">
-                Who spent how much
-              </Heading>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="white"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text fontWeight="bold">Deep</Text>
-                <Text flex="1">Hote, food, ticket</Text>
-                <Text fontWeight="bold">2345</Text>
-              </HStack>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="white"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text fontWeight="bold">Kunal</Text>
-                <Text flex="1">Hote, food, ticket</Text>
-                <Text fontWeight="bold">2345</Text>
-              </HStack>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="white"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text fontWeight="bold">Piu</Text>
-                <Text flex="1">
-                  Hote, food, ticket,Hote, food, ticket,Hote, food, ticket,Hote,
-                  food, ticket,
-                </Text>
-                <Text fontWeight="bold">2345</Text>
-              </HStack>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="white"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text fontWeight="bold">Joyeeta</Text>
-                <Text flex="1">Hote, food, ticket</Text>
-                <Text fontWeight="bold">2345</Text>
-              </HStack>
-            </VStack>
-            <Divider my="5"/>
-            <VStack space="2" mt="3" mb="5">
-              <Heading size="sm">
-                Share Details
-              </Heading>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="gray.200"
-                px="4"
-                py="2"
-                alignItems="center"
-                borderRadius="4">
-                <Text fontWeight="bold">Deep</Text>
-                <Text flex="1">Hote, food, ticket</Text>
-                <Text fontWeight="bold">2345</Text>
-                <Button size="xs" px="2" py="2" alignSelf="center" bg="dark.50" onPress={() => props.navigation.navigate('Bill')}>Generate Bill</Button>
-              </HStack>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="gray.200"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text fontWeight="bold">Deep</Text>
-                <Text flex="1">Hote, food, ticket</Text>
-                <Text fontWeight="bold">2345</Text>
-              </HStack>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="gray.200"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text fontWeight="bold">Deep</Text>
-                <Text flex="1">Hote, food, ticket</Text>
-                <Text fontWeight="bold">2345</Text>
-              </HStack>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="gray.200"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text fontWeight="bold">Deep</Text>
-                <Text flex="1">Hote, food, ticket</Text>
-                <Text fontWeight="bold">2345</Text>
-              </HStack>
-            </VStack>
-            <Divider my="5"/>
-            <VStack space="2" mb="5">
-              <Heading size="sm">
-                Who needs to pay whom
-              </Heading>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="gray.700"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text color="white" fontWeight="bold">Deep</Text>
-                <Text color="white" flex="1">needs to pay Piu</Text>
-                <Text color="white" fontWeight="bold">2345</Text>
-              </HStack>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="gray.700"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text color="white" fontWeight="bold">Kunal</Text>
-                <Text color="white" flex="1">needs to pay Deep</Text>
-                <Text color="white" fontWeight="bold">678</Text>
-              </HStack>
-              <HStack
-                space="4"
-                justifyContent="space-between"
-                bg="gray.700"
-                px="4"
-                py="2"
-                borderRadius="4">
-                <Text color="white" fontWeight="bold">Piu</Text>
-                <Text color="white" flex="1">needs to pay Joyeeta</Text>
-                <Text color="white" fontWeight="bold">4532</Text>
-              </HStack>
+              <VStack>
+                <Heading size="sm" mb="2">Sharing Details</Heading>
+                {
+                  memberShareDetails.length > 0 && memberShareDetails.map((member:IGenaricObjectForMember) => {
+                    return(
+                      <VStack bg="white" px="4" py="2" mb="2" borderRadius="3">
+                        <Text bold fontSize="lg" mb="1" style={{textTransform:'capitalize'}}>{member.name}</Text>
+                        <Text>Spent: {member.totalAmountSpent}rs. ( {member.spentIn})</Text>
+                        <Text>Expense: {member.totalShare}rs. ( {member.shareIn})</Text>
+                        {
+                          (member.finalCalculation === 0 || member.finalCalculation > 0) ?
+                          <Text color="green.800">Due Amount to get: {member.finalCalculation}rs.</Text> :
+                          <Text color="red.800">Due Amount to Pay: {member.finalCalculation}rs.</Text>
+                        }
+                        {
+                          member.detail.length > 0 && 
+                          <HStack>
+                            <Text>FNF: </Text>
+                            <VStack>
+                              {member.detail.map((detail:string) => <Text>{detail}</Text>)}
+                            </VStack>
+                          </HStack>
+                        }
+                        <Button bg="dark.50" size="sm" mt="3" mb="2" alignSelf="flex-start">Generate Bill</Button>
+                      </VStack>
+                    )
+                  })
+                }
+              </VStack>
             </VStack>
           </Box>
         </Stack>
