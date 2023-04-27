@@ -13,6 +13,7 @@ export const AuthContext = createContext<any>(null);
 const AuthProvider = (props: any) => {
   const [user, setUser] = useState<any>(null);
   const [loader, setLoader] = useState<boolean>(false);
+  const [bill, setBill] = useState<any>({});
   const [error, setError] = useState<string>('');
   const toast = useToast();
   const toastIdRef = React.useRef();
@@ -35,6 +36,8 @@ const AuthProvider = (props: any) => {
         setUser,
         loader,
         setLoader,
+        bill,
+        setBill,
         error,
         setError,
         showToaster: (msg: string) => {
@@ -42,6 +45,9 @@ const AuthProvider = (props: any) => {
             title: msg,
             duration: 2000
           });
+        },
+        generateBill: (detail:any) => {
+          setBill(detail)
         },
         login: async (email: string, password: string) => {
           setLoader(true);
