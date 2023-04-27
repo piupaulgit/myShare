@@ -261,25 +261,27 @@ const Overview = (props: any) => {
                           Spent by: {item.spentBy} ({item.date})
                         </Text>
                         <Divider />
-                        <HStack justifyContent="space-between">
-                          <HStack space="2" mt="2">
+                        <HStack justifyContent="space-between" flexWrap="wrap">
+                          <HStack space="2" mt="2" flexWrap="wrap" maxW="60%">
                             {item?.splitBetween?.map((member: string) => {
                               return (
-                                <Badge variant="outline" key={member}>
+                                <Badge variant="outline" key={member} mb="1">
                                   {member}
                                 </Badge>
                               );
                             })}
                           </HStack>
-                          <HStack space="2" mt="2">
+                          <HStack space="2" mt="2" maxW="40%">
                             <Button
                               bg="dark.300"
                               py="1"
+                              alignSelf="flex-start"
                               onPress={() => openEditExpenseModal(item)}>
                               Edit
                             </Button>
                             <Button
                               bg="dark.500"
+                              alignSelf="flex-start"
                               py="1"
                               onPress={() => openDeleteModal('expense')}>
                               Delete

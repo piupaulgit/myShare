@@ -3,6 +3,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {Box, Button, Divider, HStack, Image, ScrollView, Stack, Text, VStack} from 'native-base';
 import { edge } from '../assets/images';
 import { StyleSheet } from 'react-native';
+import { Link } from '@react-navigation/native';
 
 const Bill = (props:any) => {
   return (
@@ -10,6 +11,7 @@ const Bill = (props:any) => {
       <ScrollView>
       <Stack
           px="5"
+          mb="5"
           w={{
             base: '100%',
           }}>
@@ -57,7 +59,9 @@ const Bill = (props:any) => {
                       <Text style={[styles.fontStyle]} color="gray.600" fontSize="lg" fontWeight="bold">12,334</Text>
                     </HStack>
                     <HStack mt="2">
-                      <Button bg="dark.50" flex="1" onPress={()=> props.navigation.navigate('EventDetail')}>Close</Button>
+                      <Button bg="dark.50" size="md" mt="3" mb="2">
+                          <Link to="/EventDetail" style={{color: '#fff'}}>Close</Link>
+                      </Button>
                     </HStack>
                 </VStack>
             </Box>
