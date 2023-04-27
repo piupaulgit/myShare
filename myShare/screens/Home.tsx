@@ -94,7 +94,7 @@ const Home = (props: any) => {
       ? showToaster('Member already added')
       : setNewEvent({
           ...newEvent,
-          members: [...newEvent.members, newMemberName],
+          members: [...newEvent.members, newMemberName.toLocaleLowerCase()],
         });
     setNewMemberName('');
   };

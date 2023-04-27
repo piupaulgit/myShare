@@ -37,7 +37,7 @@ const EventDetails = (props: any) => {
       }}>
       <Tab.Screen
         name="Overview"
-        children={() => <Overview singleEventData={props.route.params} />}
+        children={() => <Overview singleEventData={props.route.params} props={props} />}
       />
       <Tab.Screen name="Share Details" children={() => <ShareDetails singleEventData={props.route.params} props={props} />}/>
       <Tab.Screen name="Profile" component={Profile} />

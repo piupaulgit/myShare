@@ -21,7 +21,9 @@ import {
   VStack,
 } from 'native-base';
 import {IEvent, IExpense} from '../../interfaces/interfaces';
-import { AuthContext } from '../../navigation/AuthProvider';
+import {AuthContext} from '../../navigation/AuthProvider';
+import {deleteDoc, doc, updateDoc} from 'firebase/firestore';
+import {FirebaseDB} from '../../firebaseConfig';
 
 interface IErrorMessage {
   titleErrorMessage: string;
@@ -31,14 +33,14 @@ interface IErrorMessage {
   splitBetweenErrorMessage: string;
 }
 
-interface IErrorMessageForEditEvent{
-  titleErrorMessage: string,
-  membersErrorMessage: string
+interface IErrorMessageForEditEvent {
+  titleErrorMessage: string;
+  membersErrorMessage: string;
 }
 
 const Overview = (props: any) => {
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [newMemberName, setNewMemberName] = useState<string>('')
+  const [newMemberName, setNewMemberName] = useState<string>('');
   const [singleEvent, setSingleEvent] = useState<IEvent>(props.singleEventData);
   const [showMemberModal, setShowMemberModal] = useState<boolean>(false);
   const [showEditEventModal, setShowEditEventModal] = useState<boolean>(false);
@@ -48,7 +50,7 @@ const Overview = (props: any) => {
   const {showToaster} = useContext(AuthContext);
   const [addEditExpenseError, setAddEditExpenseError] =
     useState<IErrorMessage>(Object);
-  const [eventForEdit, setEventForEdit] = useState<IEvent>(Object)
+  const [eventForEdit, setEventForEdit] = useState<any>(Object);
 
   const [newOldExpense, setNewOldExpense] = useState<IExpense>({
     title: '',
@@ -59,7 +61,9 @@ const Overview = (props: any) => {
     status: props.singleEventData.status,
   });
 
-  const [errorMessagesForEditEvent, setErrorMessagesForEditEvent] = useState<IErrorMessageForEditEvent>(Object);
+  const [errorMessagesForEditEvent, setErrorMessagesForEditEvent] =
+    useState<IErrorMessageForEditEvent>(Object);
+  const [loader, setLoader] = useState<boolean>(false);
 
   const openMemberModal = (modalType: string) => {
     setAddMemberFor(modalType);
@@ -135,10 +139,10 @@ const Overview = (props: any) => {
   const validateEvent = () => {
     setErrorMessagesForEditEvent({
       titleErrorMessage: '',
-      membersErrorMessage:''
+      membersErrorMessage: '',
     });
 
-    let [titleMessage, membersMessage] = ['', '',''];
+    let [titleMessage, membersMessage] = ['', '', ''];
 
     // for title
     if (!eventForEdit.title) {
@@ -154,20 +158,32 @@ const Overview = (props: any) => {
       titleErrorMessage: titleMessage,
       membersErrorMessage: membersMessage,
     });
-  }
+  };
 
   useEffect(() => {
     if (
       errorMessagesForEditEvent.titleErrorMessage === '' &&
       errorMessagesForEditEvent.membersErrorMessage === ''
     ) {
-      editThisEvent();
+      editThisEvent(singleEvent.id);
     }
   }, [errorMessagesForEditEvent]);
 
-  const editThisEvent = () => {
-    console.warn(eventForEdit)
-  }
+  const editThisEvent = async (eventId: any) => {
+    try {
+      setLoader(true);
+      const updatedEvent = doc(FirebaseDB, 'events', eventId);
+      await updateDoc(updatedEvent, eventForEdit).then(res => {
+        showToaster('Event updated successfully');
+      });
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoader(false);
+      setShowEditEventModal(false);
+      setSingleEvent(eventForEdit);
+    }
+  };
 
   const removeThisMember = (index: number) => {
     const eventMembers = [...eventForEdit.members];
@@ -177,12 +193,37 @@ const Overview = (props: any) => {
 
   const calculateAllTypeOfExpenses = () => {
     let totalExpense = 0;
-    singleEvent.expenses.forEach((expense:IExpense) => {
+    singleEvent.expenses.forEach((expense: IExpense) => {
       totalExpense = totalExpense + Number(expense.value);
-    })
-    console.warn(totalExpense)
-  }
+    });
+    console.warn(totalExpense);
+  };
 
+  const deleteEvent = async (id: any) => {
+    setLoader(true);
+    try {
+      await deleteDoc(doc(FirebaseDB, 'events', id))
+        .then(res => {
+          showToaster('Event deleted successfully');
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoader(false);
+      setShowDeleterModal(false);
+      props.props.navigation.navigate('Home');
+    }
+  };
+
+  const addExpense = () => {
+    const copyData = JSON.parse(JSON.stringify(singleEvent));
+    copyData.expenses.push(newOldExpense)
+    setSingleEvent({...copyData, expenses: [...copyData.expenses], totalExpense: singleEvent.totalExpense+newOldExpense.value})
+    console.log(singleEvent)
+  };
   return (
     <SafeAreaView>
       <ScrollView>
@@ -217,7 +258,9 @@ const Overview = (props: any) => {
               <Button
                 flex="1"
                 bg="dark.300"
-                onPress={() => {setEventForEdit(singleEvent), setShowEditEventModal(true)} }>
+                onPress={() => {
+                  setEventForEdit(singleEvent), setShowEditEventModal(true);
+                }}>
                 Edit Event
               </Button>
               <Button
@@ -335,7 +378,7 @@ const Overview = (props: any) => {
                     placeholder="Value"
                     value={newOldExpense.value}
                     onChangeText={val =>
-                      setNewOldExpense({...newOldExpense, value: val})
+                      setNewOldExpense({...newOldExpense, value: Number(val)})
                     }
                   />
                   {addEditExpenseError?.valueErrorMessage?.length > 0 && (
@@ -347,27 +390,25 @@ const Overview = (props: any) => {
                 <VStack>
                   <HStack justifyContent="space-between" alignItems="center">
                     <HStack space="2" alignItems="center">
-                      <Text color="gray.500">Spent by: </Text>
-                      {newOldExpense.spentBy ? (
-                        <>
-                          <Badge variant="outline">
-                            {newOldExpense.spentBy}
-                          </Badge>
-                          <Button
-                            bg="dark.50"
-                            size="xs"
-                            onPress={() => openMemberModal('spentBy')}>
-                            Show Members
-                          </Button>
-                        </>
-                      ) : (
-                        <Button
-                          bg="dark.50"
-                          size="xs"
-                          onPress={() => openMemberModal('spentBy')}>
-                          Show Members
-                        </Button>
-                      )}
+                      <VStack>
+                      <Text color="gray.500" mb="1">Spent by: </Text>
+                      <HStack flex="1">
+                        <Select
+                          minWidth="305"
+                          placeholder="Select"
+                          onValueChange={itemValue =>
+                            setNewOldExpense({
+                              ...newOldExpense,
+                              spentBy: itemValue,
+                            })
+                          }
+                          selectedValue={newOldExpense.spentBy}>
+                          {singleEvent?.members?.map((member: string) => (
+                            <Select.Item label={member} value={member} />
+                          ))}
+                        </Select>
+                      </HStack>
+                      </VStack>
                     </HStack>
                   </HStack>
                   {addEditExpenseError?.spentByErrorMessage?.length > 0 && (
@@ -426,59 +467,8 @@ const Overview = (props: any) => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={calculateAllTypeOfExpenses}>
+                <Button bg="dark.50" onPress={addExpense}>
                   Add Expense
-                </Button>
-              </Button.Group>
-            </Modal.Footer>
-          </Modal.Content>
-        </Modal>
-
-        <Modal
-          size="sm"
-          isOpen={showMemberModal}
-          onClose={() => setShowMemberModal(false)}>
-          <Modal.Content maxWidth="400px">
-            <Modal.CloseButton />
-            <Modal.Header>Select Member</Modal.Header>
-            <Modal.Body>
-              {addMemberFor === 'spentBy' && (
-                <Radio.Group
-                  name="spentBy"
-                  value={newOldExpense.spentBy}
-                  onChange={value =>
-                    setNewOldExpense({...newOldExpense, spentBy: value})
-                  }>
-                  {singleEvent?.members?.map((member: string) => (
-                    <Radio value={member} my="1" key={member}>
-                      {member}
-                    </Radio>
-                  ))}
-                </Radio.Group>
-              )}
-              {addMemberFor === 'divideWith' && (
-                <VStack>
-                  <Checkbox.Group
-                    defaultValue={newOldExpense.splitBetween}
-                    onChange={values => {
-                      setNewOldExpense({
-                        ...newOldExpense,
-                        splitBetween: values || [],
-                      });
-                    }}>
-                    {singleEvent?.members?.map((member: string) => (
-                      <Checkbox value={member} my="1" key={member}>
-                        {member}
-                      </Checkbox>
-                    ))}
-                  </Checkbox.Group>
-                </VStack>
-              )}
-            </Modal.Body>
-            <Modal.Footer>
-              <Button.Group space={2}>
-                <Button bg="dark.50" onPress={() => setShowMemberModal(false)}>
-                  Done
                 </Button>
               </Button.Group>
             </Modal.Footer>
@@ -505,7 +495,10 @@ const Overview = (props: any) => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={() => setShowDeleterModal(false)}>
+                <Button
+                  isLoading={loader}
+                  bg="dark.50"
+                  onPress={() => deleteEvent(singleEvent.id)}>
                   Delete
                 </Button>
               </Button.Group>
@@ -526,10 +519,13 @@ const Overview = (props: any) => {
               <ScrollView>
                 <FormControl mb="2">
                   <FormControl.Label>Title</FormControl.Label>
-                  <Input placeholder="Title" value={eventForEdit.title} 
-                  onChangeText={(val:string) =>
+                  <Input
+                    placeholder="Title"
+                    value={eventForEdit.title}
+                    onChangeText={(val: string) =>
                       setEventForEdit({...eventForEdit, title: val})
-                    } />
+                    }
+                  />
                   {errorMessagesForEditEvent?.titleErrorMessage?.length > 0 && (
                     <Text fontSize="xs" color="gray.500">
                       {errorMessagesForEditEvent.titleErrorMessage}
@@ -538,10 +534,15 @@ const Overview = (props: any) => {
                 </FormControl>
                 <FormControl>
                   <FormControl.Label>Description</FormControl.Label>
-                  <Input placeholder="Description" value={eventForEdit.description} 
-                  onChangeText={value =>
-                    setEventForEdit({...eventForEdit, description: value})
-                  } style={{height:50}} mb="2"/>
+                  <Input
+                    placeholder="Description"
+                    value={eventForEdit.description}
+                    onChangeText={value =>
+                      setEventForEdit({...eventForEdit, description: value})
+                    }
+                    style={{height: 50}}
+                    mb="2"
+                  />
                 </FormControl>
                 <FormControl>
                   <FormControl.Label>Status</FormControl.Label>
@@ -565,17 +566,24 @@ const Overview = (props: any) => {
                     {eventForEdit?.members?.map(
                       (member: string, index: number) => {
                         return (
-                          <Pressable key={index} onPress={() => removeThisMember(index)}>
-                            <Badge variant="outline" mb="2">{member}</Badge>
+                          <Pressable
+                            key={index}
+                            onPress={() => removeThisMember(index)}>
+                            <Badge variant="outline" mb="2">
+                              {member}
+                            </Badge>
                           </Pressable>
                         );
                       },
                     )}
                   </HStack>
                   <HStack space={2}>
-                    <Input flex="1" placeholder="Members" value={newMemberName} onChangeText={value =>
-                      setNewMemberName(value)
-                    } />
+                    <Input
+                      flex="1"
+                      placeholder="Members"
+                      value={newMemberName}
+                      onChangeText={value => setNewMemberName(value)}
+                    />
                     <Button
                       bg="dark.50"
                       onPress={addThisMember}
@@ -584,7 +592,8 @@ const Overview = (props: any) => {
                       Add
                     </Button>
                   </HStack>
-                  {errorMessagesForEditEvent?.membersErrorMessage?.length > 0 && (
+                  {errorMessagesForEditEvent?.membersErrorMessage?.length >
+                    0 && (
                     <Text fontSize="xs" color="gray.500">
                       {errorMessagesForEditEvent.membersErrorMessage}
                     </Text>
@@ -602,7 +611,7 @@ const Overview = (props: any) => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={validateEvent}>
+                <Button bg="dark.50" onPress={validateEvent} isLoading={loader}>
                   Save
                 </Button>
               </Button.Group>
