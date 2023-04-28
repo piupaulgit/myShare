@@ -5,12 +5,16 @@ import Overview from './Overview';
 import ShareDetails from './ShareDetails';
 import {Button} from 'native-base';
 import Profile from '../Profile';
-import {collection, onSnapshot, query, where} from 'firebase/firestore';
-import {FirebaseDB} from '../../firebaseConfig';
-import {IEvent} from '../../interfaces/interfaces';
 const Tab = createBottomTabNavigator();
 
 const EventDetails = (props: any) => {
+
+  const [singEventToSend, setSingleEventToSend] = useState<any>(props.route.params)
+
+  useEffect(() => {
+    setSingleEventToSend(props.route.params)
+    console.log("bsdjsdfgfjgasdadffjgafasgdagfskja agfkajkdgkjdagkjdg jkgdsfjk", props.route.params)
+  },[props.route.params])
 
   return (
     <Tab.Navigator
@@ -37,9 +41,9 @@ const EventDetails = (props: any) => {
       }}>
       <Tab.Screen
         name="Overview"
-        children={() => <Overview singleEventData={props.route.params} props={props} />}
+        children={() => <Overview singleEventData={singEventToSend} props={props} />}
       />
-      <Tab.Screen name="Share Details" children={() => <ShareDetails singleEventData={props.route.params} props={props} />}/>
+      <Tab.Screen name="Share Details" children={() => <ShareDetails singleEventData={singEventToSend} props={props} />}/>
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );

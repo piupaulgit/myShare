@@ -64,6 +64,8 @@ const Overview = (props: any) => {
   const [errorMessagesForEditEvent, setErrorMessagesForEditEvent] =
     useState<IErrorMessageForEditEvent>(Object);
   const [loader, setLoader] = useState<boolean>(false);
+  const [activeExpenseIndex, setActiveExpenseIndex] = useState<any>()
+  const [expenseActionType,setExpenseActionType] = useState<string>('add')
 
   const openMemberModal = (modalType: string) => {
     setAddMemberFor(modalType);
@@ -116,6 +118,7 @@ const Overview = (props: any) => {
     setShowModal(true);
     setNewOldExpense(selectedExpense);
     console.log(newOldExpense);
+    setExpenseActionType('edit')
   };
 
   const openDeleteModal = (modalType: string) => {
@@ -218,12 +221,59 @@ const Overview = (props: any) => {
     }
   };
 
-  const addExpense = () => {
-    const copyData = JSON.parse(JSON.stringify(singleEvent));
-    copyData.expenses.push(newOldExpense)
-    setSingleEvent({...copyData, expenses: [...copyData.expenses], totalExpense: singleEvent.totalExpense+newOldExpense.value})
-    console.log(singleEvent)
+  const addExpense = async(eventId:any) => {
+    const newTotalExpenseAmount = singleEvent.totalExpense+newOldExpense.value;
+    const expenseDoc = doc(FirebaseDB, "events", eventId);
+    try{
+      setLoader(true)
+      await updateDoc(expenseDoc, {expenses: [...singleEvent.expenses,newOldExpense], totalExpense: newTotalExpenseAmount}).then(res => {
+        showToaster("EventAdded Successfully")
+        setSingleEvent({...singleEvent, expenses: [...singleEvent.expenses, newOldExpense], totalExpense: newTotalExpenseAmount});
+      })
+    }catch(e){
+      console.log(e)
+    }finally{
+      setLoader(false)
+      setShowModal(false)
+    }
   };
+
+  const deleteExpense = async(eventId:any) => {
+    const newTotalExpenseAmount = singleEvent.totalExpense - singleEvent.expenses[activeExpenseIndex].value;
+    const expenseDoc = doc(FirebaseDB, "events", eventId);
+    try{
+      setLoader(true)
+      singleEvent.expenses.splice(activeExpenseIndex, 1)
+      await updateDoc(expenseDoc, {expenses: singleEvent.expenses, totalExpense: newTotalExpenseAmount}).then(res => {
+        showToaster("EventAdded Successfully")
+        setSingleEvent({...singleEvent, expenses: singleEvent.expenses, totalExpense: newTotalExpenseAmount});
+      })
+    }catch(e){
+      console.log(e)
+    }finally{
+      setLoader(false)
+      setShowDeleterModal(false)
+    }
+    
+  }
+
+  const editExpense = async(eventId:any) => {
+    const newTotalExpenseAmount = (singleEvent.totalExpense-Number(singleEvent.expenses[activeExpenseIndex].value))+newOldExpense.value;
+    singleEvent.expenses.splice(activeExpenseIndex,1,newOldExpense)
+    const expenseDoc = doc(FirebaseDB, "events", eventId);
+    try{
+      setLoader(true)
+      await updateDoc(expenseDoc, {expenses: singleEvent.expenses, totalExpense: newTotalExpenseAmount}).then(res => {
+        showToaster("EventAdded Successfully")
+        setSingleEvent({...singleEvent, expenses: singleEvent.expenses, totalExpense: newTotalExpenseAmount});
+      })
+    }catch(e){
+      console.log(e)
+    }finally{
+      setLoader(false)
+      setShowModal(false)
+    }
+  }
   return (
     <SafeAreaView>
       <ScrollView>
@@ -248,8 +298,8 @@ const Overview = (props: any) => {
             </Text>
             <HStack mt="3" flexWrap="wrap" space={2}>
               {singleEvent.members.length > 0 &&
-                singleEvent.members.map(member => (
-                  <Badge variant="outline" mb="2" key={member}>
+                singleEvent.members.map((member, index) => (
+                  <Badge variant="outline" mb="2" key={index}>
                     {member}
                   </Badge>
                 ))}
@@ -278,7 +328,7 @@ const Overview = (props: any) => {
                 <Button
                   size="sm"
                   bg="dark.50"
-                  onPress={() => setShowModal(true)}>
+                  onPress={() => {setShowModal(true), setExpenseActionType('add')}}>
                   Add expenses
                 </Button>
               </HStack>
@@ -294,7 +344,7 @@ const Overview = (props: any) => {
                     mt="3"
                     data={singleEvent.expenses}
                     keyExtractor={item => item.title}
-                    renderItem={({item}) => (
+                    renderItem={({item,index}) => (
                       <Box bg="white" borderRadius="4" px="4" py="2" mb="2">
                         <HStack justifyContent="space-between" flexWrap="wrap">
                           <Text>{item.title}</Text>
@@ -306,9 +356,9 @@ const Overview = (props: any) => {
                         <Divider />
                         <HStack justifyContent="space-between" flexWrap="wrap">
                           <HStack space="2" mt="2" flexWrap="wrap" maxW="60%">
-                            {item?.splitBetween?.map((member: string) => {
+                            {item?.splitBetween?.map((member: string, index:number) => {
                               return (
-                                <Badge variant="outline" key={member} mb="1">
+                                <Badge variant="outline" key={index} mb="1">
                                   {member}
                                 </Badge>
                               );
@@ -319,14 +369,14 @@ const Overview = (props: any) => {
                               bg="dark.300"
                               py="1"
                               alignSelf="flex-start"
-                              onPress={() => openEditExpenseModal(item)}>
+                              onPress={() => {openEditExpenseModal(item), setActiveExpenseIndex(index)}}>
                               Edit
                             </Button>
                             <Button
                               bg="dark.500"
                               alignSelf="flex-start"
                               py="1"
-                              onPress={() => openDeleteModal('expense')}>
+                              onPress={() => {openDeleteModal('expense'), setActiveExpenseIndex(index)}}>
                               Delete
                             </Button>
                           </HStack>
@@ -354,7 +404,9 @@ const Overview = (props: any) => {
         <Modal size="xl" isOpen={showModal} onClose={() => setShowModal(false)}>
           <Modal.Content maxWidth="400px">
             <Modal.CloseButton />
-            <Modal.Header>Add new expense</Modal.Header>
+            <Modal.Header>
+              {expenseActionType === 'add' ? 'Add new expense' : 'Edit'}
+            </Modal.Header>
             <Modal.Body>
               <ScrollView>
                 <FormControl mb="2">
@@ -376,7 +428,7 @@ const Overview = (props: any) => {
                   <FormControl.Label>Value</FormControl.Label>
                   <Input
                     placeholder="Value"
-                    value={newOldExpense.value}
+                    value={newOldExpense.value.toString()}
                     onChangeText={val =>
                       setNewOldExpense({...newOldExpense, value: Number(val)})
                     }
@@ -403,8 +455,8 @@ const Overview = (props: any) => {
                             })
                           }
                           selectedValue={newOldExpense.spentBy}>
-                          {singleEvent?.members?.map((member: string) => (
-                            <Select.Item label={member} value={member} />
+                          {singleEvent?.members?.map((member: string,index:number) => (
+                            <Select.Item label={member} value={member} key={index} />
                           ))}
                         </Select>
                       </HStack>
@@ -421,7 +473,7 @@ const Overview = (props: any) => {
                   <FormControl.Label>Date</FormControl.Label>
                   <Input
                     placeholder="Date"
-                    value={singleEvent.date}
+                    value={newOldExpense.date}
                     onChangeText={value =>
                       setNewOldExpense({...newOldExpense, date: value})
                     }
@@ -442,9 +494,9 @@ const Overview = (props: any) => {
                   </Button>
                 </HStack>
                 <HStack space="2" mt="2" flexWrap="wrap">
-                  {newOldExpense?.splitBetween?.map((member: string) => {
+                  {newOldExpense?.splitBetween?.map((member: string, index:number) => {
                     return (
-                      <Badge variant="outline" key={member}>
+                      <Badge variant="outline" key={index}>
                         {member}
                       </Badge>
                     );
@@ -467,9 +519,15 @@ const Overview = (props: any) => {
                   }}>
                   Cancel
                 </Button>
-                <Button bg="dark.50" onPress={addExpense}>
+                {
+                  expenseActionType === 'add' ? <Button isLoading={loader} bg="dark.50" onPress={() => addExpense(singleEvent.id)}>
                   Add Expense
-                </Button>
+                </Button> :
+                <Button isLoading={loader} bg="dark.50" onPress={() => editExpense(singleEvent.id)}>
+                Edit Expense
+              </Button>
+                }
+                
               </Button.Group>
             </Modal.Footer>
           </Modal.Content>
@@ -495,12 +553,22 @@ const Overview = (props: any) => {
                   }}>
                   Cancel
                 </Button>
-                <Button
+                {
+                  deleteModalType === 'event' ? <Button
                   isLoading={loader}
                   bg="dark.50"
                   onPress={() => deleteEvent(singleEvent.id)}>
                   Delete
                 </Button>
+                :
+                <Button
+                  isLoading={loader}
+                  bg="dark.50"
+                  onPress={() => deleteExpense(singleEvent.id)}>
+                  Delete
+                </Button>
+                }
+                
               </Button.Group>
             </Modal.Footer>
           </Modal.Content>
@@ -613,6 +681,58 @@ const Overview = (props: any) => {
                 </Button>
                 <Button bg="dark.50" onPress={validateEvent} isLoading={loader}>
                   Save
+                </Button>
+              </Button.Group>
+            </Modal.Footer>
+          </Modal.Content>
+        </Modal>
+
+        {/* add expense memeber modal */}
+        <Modal
+          size="sm"
+          isOpen={showMemberModal}
+          onClose={() => setShowMemberModal(false)}>
+          <Modal.Content maxWidth="400px">
+            <Modal.CloseButton />
+            <Modal.Header>Select Member</Modal.Header>
+            <Modal.Body>
+              {addMemberFor === 'spentBy' && (
+                <Radio.Group
+                  name="spentBy"
+                  value={newOldExpense.spentBy}
+                  onChange={value =>
+                    setNewOldExpense({...newOldExpense, spentBy: value})
+                  }>
+                  {singleEvent?.members?.map((member: string) => (
+                    <Radio value={member} my="1" key={member}>
+                      {member}
+                    </Radio>
+                  ))}
+                </Radio.Group>
+              )}
+              {addMemberFor === 'divideWith' && (
+                <VStack>
+                  <Checkbox.Group
+                    defaultValue={newOldExpense.splitBetween}
+                    onChange={values => {
+                      setNewOldExpense({
+                        ...newOldExpense,
+                        splitBetween: values || [],
+                      });
+                    }}>
+                    {singleEvent?.members?.map((member: string) => (
+                      <Checkbox value={member} my="1" key={member}>
+                        {member}
+                      </Checkbox>
+                    ))}
+                  </Checkbox.Group>
+                </VStack>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button.Group space={2}>
+                <Button bg="dark.50" onPress={() => setShowMemberModal(false)}>
+                  Done
                 </Button>
               </Button.Group>
             </Modal.Footer>
