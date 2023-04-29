@@ -56,9 +56,9 @@ const Overview = (props: any) => {
     title: '',
     value: 0,
     spentBy: '',
-    splitBetween: props.singleEventData.members,
-    date: props.singleEventData.date,
-    status: props.singleEventData.status,
+    splitBetween: props.singleEventData?.members,
+    date: props.singleEventData?.date,
+    status: props.singleEventData?.status,
   });
 
   const [errorMessagesForEditEvent, setErrorMessagesForEditEvent] =
@@ -194,13 +194,6 @@ const Overview = (props: any) => {
     setEventForEdit({...eventForEdit, members: eventMembers});
   };
 
-  const calculateAllTypeOfExpenses = () => {
-    let totalExpense = 0;
-    singleEvent.expenses.forEach((expense: IExpense) => {
-      totalExpense = totalExpense + Number(expense.value);
-    });
-    console.warn(totalExpense);
-  };
 
   const deleteEvent = async (id: any) => {
     setLoader(true);
@@ -297,8 +290,8 @@ const Overview = (props: any) => {
               {singleEvent.description}
             </Text>
             <HStack mt="3" flexWrap="wrap" space={2}>
-              {singleEvent.members.length > 0 &&
-                singleEvent.members.map((member, index) => (
+              {singleEvent?.members?.length > 0 &&
+                singleEvent?.members?.map((member, index) => (
                   <Badge variant="outline" mb="2" key={index}>
                     {member}
                   </Badge>
@@ -496,7 +489,7 @@ const Overview = (props: any) => {
                 <HStack space="2" mt="2" flexWrap="wrap">
                   {newOldExpense?.splitBetween?.map((member: string, index:number) => {
                     return (
-                      <Badge variant="outline" key={index}>
+                      <Badge variant="outline" key={index} mb="1">
                         {member}
                       </Badge>
                     );
@@ -627,16 +620,15 @@ const Overview = (props: any) => {
                 </FormControl>
                 <FormControl mt="2">
                   <FormControl.Label>Members</FormControl.Label>
-                  <Text fontSize="xs" color="gray.800" mb="1">
+                  {/* <Text fontSize="xs" color="gray.800" mb="1">
                     Tap on the memeber name to remove
-                  </Text>
+                  </Text> */}
                   <HStack space="2" mb="2" flexWrap="wrap">
                     {eventForEdit?.members?.map(
                       (member: string, index: number) => {
                         return (
                           <Pressable
-                            key={index}
-                            onPress={() => removeThisMember(index)}>
+                            key={index}>
                             <Badge variant="outline" mb="2">
                               {member}
                             </Badge>

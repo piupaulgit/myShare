@@ -1,20 +1,15 @@
 import {StyleSheet, Text, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Overview from './Overview';
 import ShareDetails from './ShareDetails';
 import {Button} from 'native-base';
 import Profile from '../Profile';
+import { AuthContext } from '../../navigation/AuthProvider';
 const Tab = createBottomTabNavigator();
 
 const EventDetails = (props: any) => {
-
-  const [singEventToSend, setSingleEventToSend] = useState<any>(props.route.params)
-
-  useEffect(() => {
-    setSingleEventToSend(props.route.params)
-    console.log("bsdjsdfgfjgasdadffjgafasgdagfskja agfkajkdgkjdagkjdg jkgdsfjk", props.route.params)
-  },[props.route.params])
+  const {currentSingleEvent}  = useContext(AuthContext)
 
   return (
     <Tab.Navigator
@@ -41,9 +36,9 @@ const EventDetails = (props: any) => {
       }}>
       <Tab.Screen
         name="Overview"
-        children={() => <Overview singleEventData={singEventToSend} props={props} />}
+        children={() => <Overview singleEventData={currentSingleEvent} props={props} />}
       />
-      <Tab.Screen name="Share Details" children={() => <ShareDetails singleEventData={singEventToSend} props={props} />}/>
+      <Tab.Screen name="Share Details" children={() => <ShareDetails singleEventData={currentSingleEvent} props={props} />}/>
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );

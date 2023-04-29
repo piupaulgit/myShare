@@ -17,6 +17,8 @@ import {
 } from 'native-base';
 import {Link} from '@react-navigation/native';
 import { logo } from '../assets/images';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 
 interface IUser {
   email: string;
@@ -35,7 +37,7 @@ const SignUp = (props:any) => {
   const [newUser, setNewUser] = useState<IUser>(Object);
   const [errorMessages, setErrorMessages] = useState<IErrorMessage>(Object)
   const {loader} = useContext<any>(AuthContext);
-  const {register} = useContext(AuthContext);
+  const {showToaster} = useContext(AuthContext);
 
   useEffect(() => {
     if(errorMessages.emailError === '' && errorMessages.passwordError === '' && 
@@ -89,8 +91,20 @@ const SignUp = (props:any) => {
     setErrorMessages({...errorMessages, emailError: emailMessage, passwordError : passwordMessage, confirmPasswordError: confrimPasswordMessage, userNameError: userNameMessage})
   }
 
-  const registerUser = () => {
-   register(newUser.email, newUser.password)
+  const registerUser = async() => {
+    // console.warn(newUser)
+    try{
+      const res = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
+			const user:any = res.user;
+			await updateProfile(user.auth.currentUser, {
+				displayName: newUser.userName,
+			});
+    }catch(e:any){
+      showToaster(e.message)
+    }finally{
+      showToaster('Your Created successfully')
+    }
+    
   }
 
   return (
@@ -112,14 +126,7 @@ const SignUp = (props:any) => {
               <Text fontSize="xs">Split expenses, not friendships</Text>
             </VStack>
             <Heading size="xl" alignSelf="center" mb="5">Create Account</Heading>
-            <FormControl mb="2">
-              <FormControl.Label>Email Address</FormControl.Label>
-              <Input
-                value={newUser.email}
-                onChangeText={value => setNewUser({...newUser, email: value})}
-              />
-              {errorMessages?.emailError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.emailError}</Text>} 
-            </FormControl>
+
             <FormControl mb="2">
               <FormControl.Label>User Name</FormControl.Label>
               <Input
@@ -127,6 +134,14 @@ const SignUp = (props:any) => {
                 onChangeText={value => setNewUser({...newUser, userName: value})}
               />
               {errorMessages?.userNameError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.userNameError}</Text>} 
+            </FormControl>
+            <FormControl mb="2">
+              <FormControl.Label>Email Address</FormControl.Label>
+              <Input
+                value={newUser.email}
+                onChangeText={value => setNewUser({...newUser, email: value})}
+              />
+              {errorMessages?.emailError?.length > 0 && <Text fontSize="xs" color="gray.500">{errorMessages.emailError}</Text>} 
             </FormControl>
             <FormControl mb="2">
               <FormControl.Label>Password</FormControl.Label>

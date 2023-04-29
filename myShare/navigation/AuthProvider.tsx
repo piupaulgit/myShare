@@ -7,6 +7,7 @@ import {
 import {auth, FirebaseDB} from '../firebaseConfig';
 import { useToast } from 'native-base';
 import { addDoc, collection } from 'firebase/firestore';
+import { event } from 'react-native-reanimated';
 
 export const AuthContext = createContext<any>(null);
 
@@ -15,6 +16,8 @@ const AuthProvider = (props: any) => {
   const [loader, setLoader] = useState<boolean>(false);
   const [bill, setBill] = useState<any>({});
   const [error, setError] = useState<string>('');
+  const [currentEventIndex, setCurrentEventIndex] = useState<number>();
+  const [currentSingleEvent, setCurrentSingleEvent] = useState<any>();
   const toast = useToast();
   const toastIdRef = React.useRef();
 
@@ -40,14 +43,15 @@ const AuthProvider = (props: any) => {
         setBill,
         error,
         setError,
+        currentEventIndex,
+        setCurrentEventIndex,
+        currentSingleEvent,
+        setCurrentSingleEvent,
         showToaster: (msg: string) => {
           toastIdRef.current = toast.show({
             title: msg,
             duration: 2000
           });
-        },
-        generateBill: (detail:any) => {
-          setBill(detail)
         },
         login: async (email: string, password: string) => {
           setLoader(true);

@@ -60,11 +60,10 @@ const ShareDetails = (props: any) => {
           obj['spentDetail'].push(spentDetailObj);
         }
         if (expense.splitBetween.includes(member)) {
-          obj['totalShare'] =
-            obj.totalShare + expense.value / expense.splitBetween.length;
+          obj['totalShare'] =Number((Math.round(Number(obj.totalShare + expense.value / expense.splitBetween.length) * 100) / 100).toFixed(2))
           const shareDetailObj = {
             title: expense.title,
-            value: expense.value / expense.splitBetween.length,
+            value: Number((Math.round(expense.value / expense.splitBetween.length * 100) / 100).toFixed(2)),
           };
           obj['shareDetail'].push(shareDetailObj);
         }
@@ -80,15 +79,15 @@ const ShareDetails = (props: any) => {
           if (mem.extra > 0) {
             if (mem.extra - Math.abs(eachMember.extra) === 0) {
               eachMember.extra = 0;
-              amount = mem.extra;
+              amount = Number((Math.round(mem.extra * 100) / 100).toFixed(2));
               mem.extra = 0;
             } else if (mem.extra - Math.abs(eachMember.extra) > 0) {
               mem.extra = mem.extra - Math.abs(eachMember.extra);
-              amount = Math.abs(eachMember.extra);
+              amount = Number((Math.round(Math.abs(eachMember.extra) * 100) / 100).toFixed(2));;
               eachMember.extra = 0;
             } else if (mem.extra - Math.abs(eachMember.extra) < 0) {
               eachMember.extra = mem.extra - Math.abs(eachMember.extra);
-              amount = mem.extra;
+              amount = Number((Math.round(mem.extra * 100) / 100).toFixed(2));
               mem.extra = 0;
             }
           }

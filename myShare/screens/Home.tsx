@@ -39,6 +39,8 @@ const Home = (props: any) => {
   const auth = getAuth();
   const {user} = useContext(AuthContext);
   const {showToaster} = useContext(AuthContext);
+  const {currentEventIndex, setCurrentEventIndex} = useContext(AuthContext)
+  const {setCurrentSingleEvent} = useContext(AuthContext)
   const [showModal, setShowModal] = useState<boolean>(false);
   const [newEvent, setNewEvent] = useState<IEvent>({
     title: '',
@@ -47,7 +49,7 @@ const Home = (props: any) => {
     status: 'open',
     expenses: [],
     date: `${String(new Date().getDate()).padStart(2, '0')}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${new Date().getFullYear()}`,
-    createdBy: user.uid,
+    createdBy: user.displayName,
     totalExpense: 0
   });
   const [errorMessages, setErrorMessages] = useState<IErrorMessage>({
@@ -69,12 +71,19 @@ const Home = (props: any) => {
           obj.id = doc.id;
           events.push(obj);
         });
+        
         setEventList(events);
         setShowLoader(false);
       });
     };
     getAllEvents();
   }, []);
+
+  useEffect(() => {
+    if(currentEventIndex > -1){
+      setCurrentSingleEvent(eventList[currentEventIndex])
+    }
+  },[eventList])
 
   useEffect(() => {
     if (
@@ -147,7 +156,10 @@ const Home = (props: any) => {
     }
   };
 
-  const eventDetail = (item: any) => {
+  const eventDetail = (item: any, index:any) => {
+    console.log(item,'opopo')
+    setCurrentEventIndex(index)
+    setCurrentSingleEvent(item)
     props.navigation.navigate('EventDetail', item);
   };
 
@@ -191,8 +203,8 @@ const Home = (props: any) => {
                 <Heading mb="4">Your events</Heading>
                 <FlatList
                   data={eventList}
-                  renderItem={({item}) => (
-                    <Pressable onPress={() => eventDetail(item)}>
+                  renderItem={({item,index}) => (
+                    <Pressable onPress={() => eventDetail(item,index)}>
                       <HStack
                         bg="#fff"
                         mb="2"
